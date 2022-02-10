@@ -1,68 +1,81 @@
 #include <Arduino.h>
-#include <Arduino_FreeRTOS.h>
 #include "I2Cdev.h"
 #include "Wire.h"
-#include "MPU6050_6Axis_MotionApps_V6_12.h"
+#include "MPU6050_6Axis_MotionApps20.h"
 
-#define LED_BUILTIN 12
+MPU6050 mpu;
+boolean init_success = false;
 
-void vMPU(void *pvParameters) {
+#define PIN_MAGNET 10
+#define PIN_MAGLED 11
+//#define PRINTING
 
-  MPU6050 mpu;
+void setup() {
 
-  bool dmpReady = false;  // set true if DMP init was successful
-  uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
-  uint8_t fifoBuffer[64]; // FIFO storage buffer
-
-  // orientation/motion vars
-  Quaternion q;           // [w, x, y, z]         quaternion container
-  VectorFloat gravity;    // [x, y, z]            gravity vector
-  float ypr[3];
+  Serial.begin(115200);
+  pinMode(LED_BUILTIN,OUTPUT);
+  pinMode(PIN_MAGNET,OUTPUT);
 
   // Initialize MPU
+  #ifdef PRINTING
+  Serial.println("Setting up MPU");
+  #endif
   Wire.begin();
   delay(20);
   mpu.initialize();
 
   if (mpu.dmpInitialize() == 0){
-    mpu.CalibrateAccel(6);
-    mpu.CalibrateGyro(6);
+    #ifdef PRINTING
+    Serial.println("Calibrating MPU");
+    #endif
+    mpu.CalibrateAccel(10);
+    mpu.CalibrateGyro(10);
     mpu.setDMPEnabled(true);
-    mpu.setDLPFMode(MPU6050_DLPF_BW_98);
-    packetSize = mpu.dmpGetFIFOPacketSize();
-  }
-
-  const TickType_t xFrequency = 100;
-  TickType_t xLastWakeTime = xTaskGetTickCount();
-
-  // Thread loop
-  while (true)
-  {
-    vTaskDelayUntil(&xLastWakeTime, int(1000 / xFrequency));
     
-    mpu.dmpGetQuaternion(&q, fifoBuffer);
-    mpu.dmpGetGravity(&gravity, &q);
-    mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+    mpu.setDLPFMode(MPU6050_DLPF_BW_188);
+    #ifdef PRINTING
+    Serial.println("MPU calibration complete");
+    #endif
+    digitalWrite(LED_BUILTIN,HIGH);
+    init_success = true;
+  } 
+  #ifdef PRINTING
+  else {
+    Serial.println("MPU setup FAILED!");
+    init_success = false;
   }
-}
-
-void vSerialSND(void *pvParameters) {
-
-}
-
-void vSerialRCV(void *pvParameters) {
-  
-}
-
-void setup() {
-
-  float angle;
-  
-  xTaskCreate(vMPU, "vMPU", 8000, &angle, 1, NULL);
-  xTaskCreate(vSerialSND, "vSerialSND", 8000, &angle, 1, NULL);
-  xTaskCreate(vSerialRCV, "vSerialRCV", 8000, &angle, 1, NULL);
+  #endif
 }
 
 void loop() {
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  if (init_success){
+    uint8_t fifoBuffer[64]; // FIFO storage buffer
+    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+      Quaternion q;           // [w, x, y, z]         quaternion container
+      VectorFloat gravity;    // [x, y, z]            gravity vector
+      float ypr[3];
+      mpu.dmpGetQuaternion(&q, fifoBuffer);
+      mpu.dmpGetGravity(&gravity, &q);
+      mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+      Serial.println(ypr[2]*(180/PI));
+    }
+    if (Serial.available() > 0) {
+      String rcv = Serial.readStringUntil(*"\n");
+
+      // Read for magnet command
+      if (rcv.indexOf("M1")>-1){
+        digitalWrite(PIN_MAGNET,HIGH);
+        digitalWrite(PIN_MAGLED,HIGH);
+      } else if (rcv.indexOf("M0")>-1){
+        digitalWrite(PIN_MAGNET,LOW);
+        digitalWrite(PIN_MAGLED,LOW);
+      }
+    } 
+  } else {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(250);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
+  }
 }
