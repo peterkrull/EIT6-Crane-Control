@@ -2,8 +2,9 @@
 #include <OutputThreadFunc.h>
 #include <InputThreadFunc.h>
 
-void manualControl(DataIn dataInFunc){
+void manualControl(ConvertedData convertedData){
 
+    
 }
 
 //converts voltage to position in mm

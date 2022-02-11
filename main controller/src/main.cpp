@@ -85,6 +85,7 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 void TaskMainThread(void *pvParameters __attribute__((unused))){
 
     DataIn localDataIn;
+	ConvertedData convertedData;
     DataOut localDataOut;
 
     while(true){
@@ -94,17 +95,20 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
              xSemaphoreGive(dataIn_semaphore);
         }
 		
-		float joystickX = joystick_Converter(localDataIn.joystickX);
-		float joystickY = joystick_Converter(localDataIn.joystickY);
-		//float tacoX = taco_Converter(localDataIn.tacoX);
-		//float tacoY = taco_Converter(localDataIn.tacoY);
-		short posX = posX_Converter(localDataIn.posX);
-		short posY = posY_Converter(localDataIn.posY);
+		convertedData.joystickX = joystick_Converter(localDataIn.joystickX);
+		convertedData.joystickY = joystick_Converter(localDataIn.joystickY);
+		//convertedData.tacoX = taco_Converter(localDataIn.tacoX);
+		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
+		convertedData.posX = posX_Converter(localDataIn.posX);
+		convertedData.posY = posY_Converter(localDataIn.posY);
+		convertedData.toggleMagnet = localDataIn.toggleMagnet;
+		convertedData.toggleManual = localDataIn.toggleManual;
 
-        switch (dataIn.toggleManual)
+
+        switch (convertedData.toggleManual)
         {
         case 1:
-            manualControl(localDataIn);
+            manualControl(convertedData);
             break;
         case 0:
             autonomousCountrol();

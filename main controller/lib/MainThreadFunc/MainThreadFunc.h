@@ -8,10 +8,15 @@
 struct ConvertedData{
     short posX;
     short posY;
-    float joystickX;
-    float joystickY;
 
-    bool magnet;
+    int joystickX;
+    int joystickY;
+
+    float tacoX = 0;
+    float tacoY = 0;
+
+    bool toggleMagnet = 0;
+    bool toggleManual = 0;
 };
 
 
@@ -19,7 +24,7 @@ short posY_Converter(int input);
 short posX_Converter(int input);
 
 
-void manualControl ();
+void manualControl (ConvertedData convertedData);
     
 void autonomousCountrol();
 
