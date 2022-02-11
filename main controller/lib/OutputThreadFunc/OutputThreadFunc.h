@@ -10,6 +10,7 @@ struct DataOut{
   int pwmY = 0;
   bool enableX = 0;
   bool enableY = 0;
+  bool magnetEnable = 0;
 };
 
 #endif
