@@ -6,15 +6,10 @@
 #include <semphr.h>
 
 struct DataOut{
-    int joystickX = 0;
-    int joystickY = 0;
-    bool deadZoneEnableX = 0;
-    bool deadZoneEnableY = 0 
-
+  int pwmX = 0;
+  int pwmY = 0;
+  bool enableX = 0;
+  bool enableY = 0;
 };
-
-bool joystickDeadZone(float dataJoystick);
-int joystickFormat(float dataJoystick);
-
 
 #endif
