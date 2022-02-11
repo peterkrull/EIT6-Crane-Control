@@ -86,7 +86,7 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 
     DataIn localDataIn;
 	ConvertedData convertedData;
-    DataOut localDataOut;
+    struct DataOut localDataOut;
 
     while(true){
 
@@ -108,7 +108,7 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
         switch (convertedData.toggleManual)
         {
         case 1:
-            manualControl(convertedData);
+            localDataOut = manualControl(convertedData);
             break;
         case 0:
             autonomousCountrol();
