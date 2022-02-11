@@ -22,18 +22,6 @@ short posX_Converter(int input){
 	return short(toReturn*1000);
 }
 
-float joystick_Converter(int input){
-	short neutralBuffer = 50;
-	float toReturn;
-
-	if(1023/2-neutralBuffer < input && input < 1023/2+neutralBuffer) toReturn = 0;
-	else{
-		toReturn = 100-input*100/461;
-	}
-
-	return toReturn;
-}
-
 bool joystickDeadZone(float dataJoystick){
     bool toReturn;
     if(-5 < dataJoystick < 5){
@@ -46,7 +34,6 @@ bool joystickDeadZone(float dataJoystick){
 }
 
 int joystickOutputFormat(float dataJoystick){
-    int toReturn = int(1.015*dataJoystick+127.5);
+    int toReturn = int(0.19844*dataJoystick+26);
     return toReturn;
 }
-
