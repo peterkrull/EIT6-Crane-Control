@@ -6,8 +6,7 @@ struct DataFormat{
     int joystickX = 0;
     int joystickY = 0;
     bool deadZoneEnableX = 0;
-    bool deadZoneEnableY = 0 
-
+    bool deadZoneEnableY = 0;
 };
 
 DataFormat dataFormat;
