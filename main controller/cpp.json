@@ -1,0 +1,66 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/include",
+                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/src",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/variants/mega",
+                "C:/Users/hejku/.platformio/lib/LiquidCrystal",
+                "C:/Users/hejku/.platformio/lib/LiquidCrystal@1.0.7/src",
+                "C:/Users/hejku/.platformio/lib/LiquidCrystal_I2C",
+                "C:/Users/hejku/.platformio/lib/LiquidTWI2",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "C:/Users/hejku/.platformio/packages/tool-unity",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/include",
+                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/src",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "C:/Users/hejku/.platformio/lib/LiquidCrystal",
+                    "C:/Users/hejku/.platformio/lib/LiquidCrystal@1.0.7/src",
+                    "C:/Users/hejku/.platformio/lib/LiquidCrystal_I2C",
+                    "C:/Users/hejku/.platformio/lib/LiquidTWI2",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "C:/Users/hejku/.platformio/packages/tool-unity",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50200",
+                "ARDUINO_AVR_MEGA2560",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega2560__",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "C:/Users/hejku/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerArgs": [
+                "-mmcu=atmega2560",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
