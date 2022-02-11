@@ -24,6 +24,7 @@ DataIn dataIn;
 
 void setup()
 {
+	Serial.begin(9600);
 	Serial3.begin(9600);
 	dataIn_semaphore = xSemaphoreCreateMutex();
 	if(dataIn_semaphore != NULL) xSemaphoreGive(dataIn_semaphore);
@@ -48,6 +49,12 @@ void TaskReadInput(void *pvParameters __attribute__((unused))){
 	const unsigned short tacoX_pin = 2;
 	const unsigned short tacoY_pin = 3;
 	
+	//thread timing variables
+	TickType_t lastWakeTime;
+	const TickType_t updateFrequency = 1; //Number of ticks between each update
+
+	lastWakeTime = xTaskGetTickCount();
+
 
 	while(true){
 		bool toggleMagnet_bool = digitalRead(toggleMagnet_pin);
@@ -67,9 +74,9 @@ void TaskReadInput(void *pvParameters __attribute__((unused))){
 		short posX = posX_Converter(posX_voltage);
 		short posY = posY_Converter(posY_voltage);
 		unsigned long measurementTime = millis();
-		Serial.print(measurementTime);
+		Serial.println(measurementTime);
 
-		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) = pdTRUE){ //Checks if semaphore is free, releases semaphore if so.
+		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, releases semaphore if so.
 			dataIn.toggleMagnet = toggleMagnet_bool;
 			dataIn.toggleManual = toggleManual_bool;
 			dataIn.joystickX = joystickX;
@@ -82,8 +89,8 @@ void TaskReadInput(void *pvParameters __attribute__((unused))){
 
 			xSemaphoreGive(dataIn_semaphore);
 		}
-		else Serial.print("dataIn_semaphore not free, could not update");
-		vTaskDelay(1);
+		else Serial.println("dataIn_semaphore not free, could not update");
+		vTaskDelayUntil(&lastWakeTime, updateFrequency);
 	}
 }
 
