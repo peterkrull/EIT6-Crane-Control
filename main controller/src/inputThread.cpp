@@ -30,7 +30,6 @@ void setup()
 	if(dataIn_semaphore != NULL) xSemaphoreGive(dataIn_semaphore);
 
 	xTaskCreate(TaskReadInput, "readInput",128, NULL, 1, NULL);
-
 }
 
 void loop()
