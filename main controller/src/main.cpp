@@ -93,7 +93,7 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 
     DataIn localDataIn;
     DataOut localDataOut;
-
+	ConvertedData convertedData;
     while(true){
 
         if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){
@@ -114,11 +114,11 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
         switch (dataIn.toggleManual)
         {
         case 1:
-            manualControl();
+            localDataOut = manualControl(convertedData);
             break;
         case 0:
             autonomousCountrol();
-            break
+            break;
         default:
             break;
         }

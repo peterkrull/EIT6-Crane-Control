@@ -2,8 +2,8 @@
 #include <OutputThreadFunc.h>
 #include <InputThreadFunc.h>
 
-void manualControl(ConvertedData convertedData){
-
+struct DataOut manualControl(ConvertedData convertedData){
+    DataOut toReturn;
     toReturn.magnetEnable = convertedData.toggleMagnet;
     toReturn.enableX = joystickDeadZone(convertedData.joystickX);
     toReturn.enableY = joystickDeadZone(convertedData.joystickY);
