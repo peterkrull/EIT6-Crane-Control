@@ -8,25 +8,18 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/include",
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/src",
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
-                "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/cores/arduino",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/variants/mega",
-                "C:/Users/hejku/.platformio/lib/LiquidCrystal",
-                "C:/Users/hejku/.platformio/lib/LiquidCrystal@1.0.7/src",
-                "C:/Users/hejku/.platformio/lib/LiquidCrystal_I2C",
-                "C:/Users/hejku/.platformio/lib/LiquidTWI2",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
-                "C:/Users/hejku/.platformio/packages/tool-unity",
-                ""
+
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\variants\\mega",
+                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include",
+                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed",
+                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\avr\\include",
+                "..\\main controller\\lib/**",
+                "${workspaceFolder}/lib/MainThreadFunc"
+            ],
+            "forcedInclude": [
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
