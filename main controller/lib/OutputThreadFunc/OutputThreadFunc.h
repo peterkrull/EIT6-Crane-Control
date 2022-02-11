@@ -13,5 +13,8 @@ struct DataOut{
 
 };
 
+bool joystickDeadZone(float dataJoystick);
+int joystickFormat(float dataJoystick);
+
 
 #endif

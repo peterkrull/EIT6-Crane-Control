@@ -122,4 +122,17 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 
 }
 
-void TaskOutputThread(void *pvParameters __attribute__((unused))){}
+void TaskOutputThread(void *pvParameters __attribute__((unused))){
+
+    DataOut localDataOut;
+    while (true)
+    {
+        
+        if(xSemaphoreTake(dataOut_semaphore, (TickType_t) 5) == pdTrue){
+            dataFormat.deadZoneEnableX = deadZone(dataIn.joystickX);
+            dataFormat.deadZoneEnableY = deadZone(dataIn.joystickY);
+            dataFormat.joystickX = joystickFormat(dataIn.joystickX);
+            dataFormat.joystickY = joystickFormat(dataIn.joystickY);
+        }
+    }
+}
