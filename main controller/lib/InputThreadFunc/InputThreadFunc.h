@@ -16,14 +16,7 @@ struct DataIn{
     bool toggleMagnet = 0;
     bool toggleManual = 0;
     unsigned long measurementTime = 0;
-}
-
-short posY_Converter(int input);
-
-short posX_Converter(int input);
-
-float joystick_Converter(int input);
-
+};
 
 
 #endif

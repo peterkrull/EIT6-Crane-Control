@@ -60,26 +60,19 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 		//short tacoY_voltage = analogRead(tacoY_pin);
 		short posX_voltage = analogRead(posX_pin);
 		short posY_voltage = analogRead(posY_pin);
-
-		
-		float joystickX = joystick_Converter(joystickX_voltage);
-		float joystickY = joystick_Converter(joystickY_voltage);
-		//float tacoX = taco_Converter(tacoX_voltage);
-		//float tacoY = taco_Converter(tacoY_voltage);
-		short posX = posX_Converter(posX_voltage);
-		short posY = posY_Converter(posY_voltage);
 		unsigned long measurementTime = millis();
+		
 		Serial.println(measurementTime);
 
 		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, releases semaphore if so.
 			dataIn.toggleMagnet = toggleMagnet_bool;
 			dataIn.toggleManual = toggleManual_bool;
-			dataIn.joystickX = joystickX;
-			dataIn.joystickY = joystickY;
-			//dataIn.tacoX = tacoX;
-			//dataIn.tacoY = tacoY;
-			dataIn.posX = posX;
-			dataIn.posY = posY;
+			dataIn.joystickX = joystickX_voltage;
+			dataIn.joystickY = joystickY_voltage;
+			//dataIn.tacoX = tacoX_voltage;
+			//dataIn.tacoY = tacoY_voltage;
+			dataIn.posX = posX_voltage;
+			dataIn.posY = posY_voltage;
 			dataIn.measurementTime = measurementTime;
 
 			xSemaphoreGive(dataIn_semaphore);
@@ -100,15 +93,22 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
              localDataIn = dataIn;
              xSemaphoreGive(dataIn_semaphore);
         }
+		
+		float joystickX = joystick_Converter(localDataIn.joystickX);
+		float joystickY = joystick_Converter(localDataIn.joystickY);
+		//float tacoX = taco_Converter(localDataIn.tacoX);
+		//float tacoY = taco_Converter(localDataIn.tacoY);
+		short posX = posX_Converter(localDataIn.posX);
+		short posY = posY_Converter(localDataIn.posY);
 
         switch (dataIn.toggleManual)
         {
         case 1:
-            manualControl();
+            manualControl(localDataIn);
             break;
         case 0:
             autonomousCountrol();
-            break
+            break;
         default:
             break;
         }
@@ -127,7 +127,7 @@ void TaskOutputThread(void *pvParameters __attribute__((unused))){
     DataOut localDataOut;
     while (true)
     {
-        
+
         if(xSemaphoreTake(dataOut_semaphore, (TickType_t) 5) == pdTrue){
             dataFormat.deadZoneEnableX = deadZone(dataIn.joystickX);
             dataFormat.deadZoneEnableY = deadZone(dataIn.joystickY);
