@@ -2,15 +2,10 @@
 #include <OutputThreadFunc.h>
 #include <InputThreadFunc.h>
 
-struct DataOut manualControl(struct ConvertedData convertedData){
-    struct DataOut toReturn;
+void manualControl(ConvertedData convertedData){
 
-    toReturn.magnetEnable = convertedData.toggleMagnet;
     
-
-    return toReturn;
 }
-
 
 //converts voltage to position in mm
 short posY_Converter(int input){
@@ -26,6 +21,7 @@ short posX_Converter(int input){
 
 	return short(toReturn*1000);
 }
+
 
 bool joystickDeadZone(float dataJoystick){
     bool toReturn;

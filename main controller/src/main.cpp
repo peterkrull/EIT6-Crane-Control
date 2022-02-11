@@ -60,19 +60,26 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 		//short tacoY_voltage = analogRead(tacoY_pin);
 		short posX_voltage = analogRead(posX_pin);
 		short posY_voltage = analogRead(posY_pin);
-		unsigned long measurementTime = millis();
+
 		
+		float joystickX = joystick_Converter(joystickX_voltage);
+		float joystickY = joystick_Converter(joystickY_voltage);
+		//float tacoX = taco_Converter(tacoX_voltage);
+		//float tacoY = taco_Converter(tacoY_voltage);
+		short posX = posX_Converter(posX_voltage);
+		short posY = posY_Converter(posY_voltage);
+		unsigned long measurementTime = millis();
 		Serial.println(measurementTime);
 
 		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, releases semaphore if so.
 			dataIn.toggleMagnet = toggleMagnet_bool;
 			dataIn.toggleManual = toggleManual_bool;
-			dataIn.joystickX = joystickX_voltage;
-			dataIn.joystickY = joystickY_voltage;
-			//dataIn.tacoX = tacoX_voltage;
-			//dataIn.tacoY = tacoY_voltage;
-			dataIn.posX = posX_voltage;
-			dataIn.posY = posY_voltage;
+			dataIn.joystickX = joystickX;
+			dataIn.joystickY = joystickY;
+			//dataIn.tacoX = tacoX;
+			//dataIn.tacoY = tacoY;
+			dataIn.posX = posX;
+			dataIn.posY = posY;
 			dataIn.measurementTime = measurementTime;
 
 			xSemaphoreGive(dataIn_semaphore);
@@ -85,8 +92,7 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 void TaskMainThread(void *pvParameters __attribute__((unused))){
 
     DataIn localDataIn;
-	ConvertedData convertedData;
-    struct DataOut localDataOut;
+    DataOut localDataOut;
 
     while(true){
 
@@ -94,25 +100,15 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
              localDataIn = dataIn;
              xSemaphoreGive(dataIn_semaphore);
         }
-		
-		convertedData.joystickX = joystick_Converter(localDataIn.joystickX);
-		convertedData.joystickY = joystick_Converter(localDataIn.joystickY);
-		//convertedData.tacoX = taco_Converter(localDataIn.tacoX);
-		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
-		convertedData.posX = posX_Converter(localDataIn.posX);
-		convertedData.posY = posY_Converter(localDataIn.posY);
-		convertedData.toggleMagnet = localDataIn.toggleMagnet;
-		convertedData.toggleManual = localDataIn.toggleManual;
 
-
-        switch (convertedData.toggleManual)
+        switch (dataIn.toggleManual)
         {
         case 1:
-            localDataOut = manualControl(convertedData);
+            manualControl();
             break;
         case 0:
             autonomousCountrol();
-            break;
+            break
         default:
             break;
         }
@@ -129,12 +125,29 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 void TaskOutputThread(void *pvParameters __attribute__((unused))){
 
     DataOut localDataOut;
+
+	const unsigned short pwmX = 10;
+	const unsigned short pwmY = 11;
+	const unsigned short enableX = 8;
+	const unsigned short enableY = 9;
+	const unsigned short magnetEnable = 2;
+  
+	pinMode(pwmX,OUTPUT);
+	pinMode(pwmY,OUTPUT);
+	pinMode(enableX,OUTPUT);
+	pinMode(enableY,OUTPUT);
+	pinMode(magnetEnable,OUTPUT);
+
+
     while (true)
     {
-
         if(xSemaphoreTake(dataOut_semaphore, (TickType_t) 5) == pdTrue){
 			localDataOut = dataOut;
         }
-		analogWrite(localDataOut)
+		analogWrite(pwmX,localDataOut.pwmX);
+		analogWrite(pwmY,localDataOut.pwmY);
+		analogWrite(enableX,localDataOut.enableX);
+		analogWrite(enableY,localDataOut.enableY);
+		digitalWrite(magnetEnable,localDataOut.magnetEnable);
     }
 }
