@@ -95,8 +95,8 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
              xSemaphoreGive(dataIn_semaphore);
         }
 		
-		convertedData.joystickX = joystick_Converter(localDataIn.joystickX);
-		convertedData.joystickY = joystick_Converter(localDataIn.joystickY);
+		convertedData.joystickX = localDataIn.joystickX;
+		convertedData.joystickY = localDataIn.joystickY;
 		//convertedData.tacoX = taco_Converter(localDataIn.tacoX);
 		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
 		convertedData.posX = posX_Converter(localDataIn.posX);
