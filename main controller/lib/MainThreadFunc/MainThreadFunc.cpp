@@ -2,10 +2,15 @@
 #include <OutputThreadFunc.h>
 #include <InputThreadFunc.h>
 
-void manualControl(ConvertedData convertedData){
+struct DataOut manualControl(struct ConvertedData convertedData){
+    struct DataOut toReturn;
 
+    toReturn.magnetEnable = convertedData.toggleMagnet;
     
+
+    return toReturn;
 }
+
 
 //converts voltage to position in mm
 short posY_Converter(int input){
