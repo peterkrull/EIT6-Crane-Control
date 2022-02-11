@@ -22,11 +22,6 @@ short posX_Converter(int input){
 	return short(toReturn*1000);
 }
 
-
-
-
-
-
 float joystick_Converter(int input){
 	short neutralBuffer = 50;
 	float toReturn;
