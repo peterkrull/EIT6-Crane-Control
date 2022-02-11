@@ -3,8 +3,8 @@
 #include <semphr.h>
 
 struct DataFormat{
-    int joystickXformat = 0;
-    int joystickYformat = 0;
+    int joystickX = 0;
+    int joystickY = 0;
     bool deadZoneEnableX = 0;
     bool deadZoneEnableY = 0 
 
@@ -30,31 +30,25 @@ void loop(){
 void TaskFormatData(){
     while (true)
     {
-        /* code */
+        dataFormat.deadZoneEnableX = deadZone(dataIn.joystickX);
+        dataFormat.deadZoneEnableY = deadZone(dataIn.joystickY);
+        dataFormat.joystickX = joystickFormat(dataIn.joystickX);
+        dataFormat.joystickY = joystickFormat(dataIn.joystickY);
     }
-    
 }
 
-
-void FormatJoystickDataX(float dataJoystickX){
+void deadZone(float dataJoystick){
     bool toReturn;
-    if(-5 < dataIn.joystickX < 5){
+    if(-5 < dataJoystick < 5){
         toReturn = 1;
     }
     else{
         toReturn = 0;
     }
-
-    Xformat = dataIn.joystickX 
     return toReturn;
 }
 
-void FormatJoystickDataY(float dataJoystickY){
-
-
-    if (-5 < dataIn.joystickY < 5)
-    {
-        dataFormat.deadZoneEnabley = 1;
-    }
+void joystickFormat(float dataJoystick){
+    int toReturn = int(1.015*dataJoystick+127.5);
     return toReturn;
 }
