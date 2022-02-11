@@ -48,6 +48,10 @@ void TaskReadInput(void *pvParameters __attribute__((unused))){
 	const unsigned short tacoX_pin = 2;
 	const unsigned short tacoY_pin = 3;
 	
+	piMode(toggleMagnet_pin, INPUT);
+	piMode(toggleManual_pin, INPUT);
+
+
 	//thread timing variables
 	TickType_t lastWakeTime;
 	const TickType_t updateFrequency = 1; //Number of ticks between each update
