@@ -24,7 +24,7 @@ short posY_Converter(int input);
 short posX_Converter(int input);
 
 
-void manualControl (ConvertedData convertedData);
+struct DataOut manualControl (ConvertedData convertedData);
     
 void autonomousCountrol();
 

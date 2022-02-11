@@ -100,6 +100,16 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
              localDataIn = dataIn;
              xSemaphoreGive(dataIn_semaphore);
         }
+		
+		convertedData.joystickX = localDataIn.joystickX;
+		convertedData.joystickY = localDataIn.joystickY;
+		//convertedData.tacoX = taco_Converter(localDataIn.tacoX);
+		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
+		convertedData.posX = posX_Converter(localDataIn.posX);
+		convertedData.posY = posY_Converter(localDataIn.posY);
+		convertedData.toggleMagnet = localDataIn.toggleMagnet;
+		convertedData.toggleManual = localDataIn.toggleManual;
+
 
         switch (dataIn.toggleManual)
         {

@@ -4,7 +4,14 @@
 
 void manualControl(ConvertedData convertedData){
 
-    
+    toReturn.magnetEnable = convertedData.toggleMagnet;
+    toReturn.enableX = joystickDeadZone(convertedData.joystickX);
+    toReturn.enableY = joystickDeadZone(convertedData.joystickY);
+    toReturn.pwmX = joystickOutputFormat(convertedData.joystickX);
+    toReturn.pwmY = joystickOutputFormat(convertedData.joystickY);
+
+
+    return toReturn;
 }
 
 //converts voltage to position in mm
@@ -22,10 +29,10 @@ short posX_Converter(int input){
 	return short(toReturn*1000);
 }
 
-
-bool joystickDeadZone(float dataJoystick){
+bool joystickDeadZone(int dataJoystick){
     bool toReturn;
-    if(-5 < dataJoystick < 5){
+    float buffer = 1;
+    if(511.5+buffer < dataJoystick  && dataJoystick > 511.5-buffer){
         toReturn = 1;
     }
     else{
