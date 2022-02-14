@@ -16,7 +16,22 @@ struct DataIn{
     bool toggleMagnet = 0;
     bool toggleManual = 0;
     unsigned long measurementTime = 0;
+    float headAngle = 0;
 };
+
+struct InputPins{
+    const unsigned short toggleMagnet = 2;
+	const unsigned short toggleManual = 3;
+
+	const unsigned short joystickX = 8;
+	const unsigned short joystickY = 9;
+	const unsigned short posX = 0;
+	const unsigned short posY = 1;
+	const unsigned short tacoX = 2;
+	const unsigned short tacoY= 3;
+};
+
+struct DataIn readInput(void);
 
 
 #endif
