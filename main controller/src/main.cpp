@@ -20,6 +20,7 @@ void setup(){
     Serial.begin(115200);
 	Serial3.begin(115200);
 	Serial.println("Serial begun");
+	Serial.print("tickConfig ");Serial.println(configTICK_RATE_HZ);
 
     dataIn_semaphore = xSemaphoreCreateMutex();
 	if(dataIn_semaphore != NULL) xSemaphoreGive(dataIn_semaphore);
@@ -27,9 +28,9 @@ void setup(){
     if(dataOut_semaphore != NULL) xSemaphoreGive(dataOut_semaphore);
 	//Serial.println("Semaphores created");
 
-    xTaskCreate(TaskInputThread, "InputThread",256, NULL, 1, NULL);
-    xTaskCreate(TaskMainThread, "mainThread",256, NULL, 3, NULL);
-    xTaskCreate(TaskOutputThread, "OutputThread",256, NULL, 2, NULL);
+    xTaskCreate(TaskInputThread, "InputThread",512, NULL, 3, NULL);
+    xTaskCreate(TaskMainThread, "mainThread",512, NULL, 2, NULL);
+    xTaskCreate(TaskOutputThread, "OutputThread",512, NULL, 1, NULL);
 	
 }
 
@@ -56,6 +57,7 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 
 
 	Serial.println("Input thread started");
+	vTaskDelay(1);
 	while(true){
 		localDataIn = readInput();
 
@@ -80,6 +82,8 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 	const TickType_t updateFrequency = 3; //Number of ticks between each update
 
 	Serial.println("Main thread started");
+
+	vTaskDelay(1);
 
     while(true){
         if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){
@@ -108,7 +112,7 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 				if(localDataOut.enableY == 1){
 				//Serial.print("PWM y"); Serial.println(localDataOut.pwmY);
 				}
-				Serial.print("Angle ");Serial.println(localDataIn.headAngle);
+				//Serial.print("Angle ");Serial.println(localDataIn.headAngle);
 				break;
 			case 1:
 				autonomousCountrol();
