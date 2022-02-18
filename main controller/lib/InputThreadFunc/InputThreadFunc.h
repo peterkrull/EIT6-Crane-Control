@@ -24,8 +24,8 @@ struct InputPins{
     const unsigned short enableMagnet = 2;
 	const unsigned short enableManual = 3;
 
-	const unsigned short joystickX = 8;
-	const unsigned short joystickY = 9;
+	const unsigned short joystickX = 9;
+	const unsigned short joystickY = 8;
 	const unsigned short posX = 0;
 	const unsigned short posY = 1;
 	const unsigned short tacoX = 2;

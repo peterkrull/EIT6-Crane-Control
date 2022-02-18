@@ -8,45 +8,42 @@
         {
             "name": "PlatformIO",
             "includePath": [
-
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino",
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\variants\\mega",
-                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include",
-                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\lib\\gcc\\avr\\7.3.0\\include-fixed",
-                "c:\\program files (x86)\\arduino\\hardware\\tools\\avr\\avr\\include",
-                "..\\main controller\\lib/**",
-                "${workspaceFolder}/lib/MainThreadFunc"
-            ],
-            "forcedInclude": [
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
-
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/include",
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/src",
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
-                    "C:/Users/hejku/OneDrive - Aalborg Universitet/6. semester/Projekt/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/cores/arduino",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/variants/mega",
-                    "C:/Users/hejku/.platformio/lib/LiquidCrystal",
-                    "C:/Users/hejku/.platformio/lib/LiquidCrystal@1.0.7/src",
-                    "C:/Users/hejku/.platformio/lib/LiquidCrystal_I2C",
-                    "C:/Users/hejku/.platformio/lib/LiquidTWI2",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/hejku/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
-                    "C:/Users/hejku/.platformio/packages/tool-unity",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=50200",
+                "PLATFORMIO=50205",
                 "ARDUINO_AVR_MEGA2560",
                 "F_CPU=16000000L",
                 "ARDUINO_ARCH_AVR",
@@ -56,7 +53,7 @@
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "C:/Users/hejku/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
+            "compilerPath": "C:/Users/Jakob Gammelgaard/.platformio/packages/toolchain-atmelavr/bin/avr-gcc.exe",
             "compilerArgs": [
                 "-mmcu=atmega2560",
                 ""
