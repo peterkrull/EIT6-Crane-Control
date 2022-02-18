@@ -4,8 +4,11 @@
 #include <MainThreadFunc.h>
 #include <OutputThreadFunc.h>
 
+
 SemaphoreHandle_t dataIn_semaphore;
 SemaphoreHandle_t dataOut_semaphore;
+SemaphoreHandle_t serial3_semaphore;
+
 
 void TaskInputThread(void *pvParameters);
 void TaskMainThread(void *pvParameters);
@@ -16,9 +19,13 @@ struct DataIn dataIn;
 struct DataOut dataOut;
 
 
+
 void setup(){
+	
     Serial.begin(115200);
-	Serial3.begin(115200);
+	Serial3.begin(9600);
+	if(Serial3.available()>0) Serial3.readString();
+	
 	Serial.println("Serial begun");
 	Serial.print("tickConfig ");Serial.println(configTICK_RATE_HZ);
 
@@ -26,9 +33,11 @@ void setup(){
 	if(dataIn_semaphore != NULL) xSemaphoreGive(dataIn_semaphore);
     dataOut_semaphore = xSemaphoreCreateMutex();
     if(dataOut_semaphore != NULL) xSemaphoreGive(dataOut_semaphore);
+	serial3_semaphore = xSemaphoreCreateMutex();
+    if(serial3_semaphore != NULL) xSemaphoreGive(serial3_semaphore);
 	//Serial.println("Semaphores created");
 
-    xTaskCreate(TaskInputThread, "InputThread",512, NULL, 3, NULL);
+    xTaskCreate(TaskInputThread, "InputThread",2048, NULL, 3, NULL);
     xTaskCreate(TaskMainThread, "mainThread",512, NULL, 2, NULL);
     xTaskCreate(TaskOutputThread, "OutputThread",512, NULL, 1, NULL);
 	
@@ -49,8 +58,8 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 
 	InputPins pins;
 
-	pinMode(pins.toggleMagnet, INPUT);
-	pinMode(pins.toggleManual, INPUT);
+	pinMode(pins.enableMagnet, INPUT);
+	pinMode(pins.enableManual, INPUT);
 
 
 	struct DataIn localDataIn;
@@ -59,11 +68,11 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 	Serial.println("Input thread started");
 	vTaskDelay(1);
 	while(true){
-		localDataIn = readInput();
+			localDataIn = readInput();
 
 		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, takes semaphore if so.
 			dataIn = localDataIn;
-
+			
 			xSemaphoreGive(dataIn_semaphore); //releases semaphore
 		}
 		else Serial.println("dataIn_semaphore not free, could not update");
@@ -79,19 +88,20 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 	ConvertedData convertedData;
 
 	TickType_t lastWakeTime = xTaskGetTickCount();
-	const TickType_t updateFrequency = 3; //Number of ticks between each update
+	const TickType_t updateFrequency = 1; //Number of ticks between each update
 
 	Serial.println("Main thread started");
 
 	vTaskDelay(1);
 
     while(true){
+		int prev_time = localDataIn.measurementTime;
         if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){
              localDataIn = dataIn;
              xSemaphoreGive(dataIn_semaphore);
         }
 
-		
+		Serial.print("delta_time: "); Serial.println(localDataIn.measurementTime-prev_time);		
 
 		convertedData.joystickX = localDataIn.joystickX;
 		convertedData.joystickY = localDataIn.joystickY;
@@ -99,24 +109,24 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
 		convertedData.posX = posX_Converter(localDataIn.posX);
 		convertedData.posY = posY_Converter(localDataIn.posY);
-		convertedData.toggleMagnet = localDataIn.toggleMagnet;
-		convertedData.toggleManual = localDataIn.toggleManual;
+		convertedData.enableMagnet = localDataIn.enableMagnet;
+		convertedData.enableManual = localDataIn.enableManual;
+
+		Serial.print("joyX: ");Serial.println(convertedData.joystickX);
+		Serial.print("joyY: ");Serial.println(convertedData.joystickY);
+		Serial.print("posX: ");Serial.println(convertedData.posX);
+		Serial.print("posY: ");Serial.println(convertedData.posY);
+		Serial.print("enableMagnet: ");Serial.println(convertedData.enableMagnet);
+		Serial.print("enableManual: ");Serial.println(convertedData.enableManual);
+		Serial.print("angle: ");Serial.println(localDataIn.headAngle);
 
 
-        switch (dataIn.toggleManual){
-			case 0:
-				localDataOut = manualControl(convertedData);
-				if(localDataOut.enableX == 1){
-				//Serial.print("PWM x"); Serial.println(localDataOut.pwmX);
-				}
-				if(localDataOut.enableY == 1){
-				//Serial.print("PWM y"); Serial.println(localDataOut.pwmY);
-				}
-				//Serial.print("Angle ");Serial.println(localDataIn.headAngle);
-				break;
+        switch (localDataIn.enableManual){
 			case 1:
-				autonomousCountrol();
-				Serial.println("Autonomous control");
+				localDataOut = manualControl(convertedData);
+				break;
+			case 0:
+				localDataOut = autonomousCountrol(convertedData);
 				break;
 			default:
 				break;
@@ -137,19 +147,23 @@ void TaskOutputThread(void *pvParameters __attribute__((unused))){
     DataOut localDataOut;
 
 	TickType_t lastWakeTime = xTaskGetTickCount();
-	const TickType_t updateFrequency = 3; //Number of ticks between each update
+	const TickType_t updateFrequency = 1; //Number of ticks between each update
 
 	const unsigned short pwmX = 10;
 	const unsigned short pwmY = 11;
 	const unsigned short enableX = 8;
 	const unsigned short enableY = 9;
 	const unsigned short magnetEnable = 2;
+	const unsigned short magnetLED = 50; //blue wire
+	const unsigned short manualLED = 52; //green wire
   
 	pinMode(pwmX,OUTPUT);
 	pinMode(pwmY,OUTPUT);
 	pinMode(enableX,OUTPUT);
 	pinMode(enableY,OUTPUT);
 	pinMode(magnetEnable,OUTPUT);
+	pinMode(magnetLED, OUTPUT);
+	pinMode(manualLED, OUTPUT);
 
 	Serial.println("Output thread started");
     while (true)
@@ -159,20 +173,26 @@ void TaskOutputThread(void *pvParameters __attribute__((unused))){
 			xSemaphoreGive(dataOut_semaphore);
         }
 
-		String magnetOn = String("M" + String(localDataOut.magnetEnable));
-		//Serial.print("enableX");Serial.println(localDataOut.enableX);		
-		//Serial.print("enableY");Serial.println(localDataOut.enableY);
-		//Serial.print("pwmX");Serial.println(localDataOut.pwmX);
-		//Serial.print("pwmY");Serial.println(localDataOut.pwmY);
-		//Serial.print("enableMagnet");Serial.println(localDataOut.magnetEnable);
-		//Serial.print(magnetOn);
+		bool tempMagnetEnable = localDataOut.magnetEnable;
+		String magnetOn = String("M" + String(tempMagnetEnable));
+
+		//vTaskSuspendAll();
+		Serial.print("enableX");Serial.println(localDataOut.enableX);		
+		Serial.print("enableY");Serial.println(localDataOut.enableY);
+		Serial.print("pwmX");Serial.println(localDataOut.pwmX);
+		Serial.print("pwmY");Serial.println(localDataOut.pwmY);
+		Serial.print("enableMagnet");Serial.print(localDataOut.magnetEnable);
+		Serial.println(magnetOn);
+		
 
 		analogWrite(pwmX,localDataOut.pwmX);
 		analogWrite(pwmY,localDataOut.pwmY);
 		digitalWrite(enableX,localDataOut.enableX);
 		digitalWrite(enableY,localDataOut.enableY);
-		digitalWrite(magnetEnable,localDataOut.magnetEnable);
 		Serial3.println(magnetOn);
+		digitalWrite(manualLED, localDataOut.manualEnabled);
+		digitalWrite(magnetLED, localDataOut.magnetEnable);
+		
 
 		vTaskDelayUntil(&lastWakeTime, updateFrequency);
     }
