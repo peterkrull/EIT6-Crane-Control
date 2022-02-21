@@ -15,18 +15,21 @@ struct ConvertedData{
     float tacoX = 0;
     float tacoY = 0;
 
-    bool toggleMagnet = 0;
-    bool toggleManual = 0;
+    float headAngle = 0;
+
+    bool enableMagnet = 0;
+    bool enableManual = 0;
 };
 
 
 short posY_Converter(int input);
 short posX_Converter(int input);
-
+float tacoX_Converter(int input);
+float tacoY_Converter(int input);
 
 struct DataOut manualControl (ConvertedData convertedData);
     
-void autonomousCountrol();
+struct DataOut autonomousCountrol(ConvertedData convertedData);
 
 
 

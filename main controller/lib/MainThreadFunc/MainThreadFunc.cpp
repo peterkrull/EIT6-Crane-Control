@@ -4,12 +4,12 @@
 
 struct DataOut manualControl(ConvertedData convertedData){
     DataOut toReturn;
-    toReturn.magnetEnable = convertedData.toggleMagnet;
+    toReturn.magnetEnable = convertedData.enableMagnet;
     toReturn.enableX = joystickDeadZone(convertedData.joystickX);
     toReturn.enableY = joystickDeadZone(convertedData.joystickY);
     toReturn.pwmX = joystickOutputFormat(convertedData.joystickX);
     toReturn.pwmY = joystickOutputFormat(convertedData.joystickY);
-
+    toReturn.manualEnabled = true;
 
     return toReturn;
 }
@@ -28,6 +28,16 @@ short posX_Converter(int input){
 
 	return short(toReturn*1000);
 }
+
+float tacoX_Converter(int input){
+    short toReturn = 0;
+    return toReturn;
+}
+float tacoY_Converter(int input){
+    short toReturn = 0;
+    return toReturn;
+}
+
 
 bool joystickDeadZone(float dataJoystick){
     bool toReturn;
@@ -49,4 +59,14 @@ int joystickOutputFormat(float dataJoystick){
 
 
 
-void autonomousCountrol(){}
+struct DataOut autonomousCountrol(ConvertedData convertedData){
+    DataOut toReturn;
+    toReturn.enableX = 0;
+    toReturn.enableY = 0;
+    toReturn.pwmX = 0;
+    toReturn.pwmY = 0;
+    toReturn.magnetEnable = convertedData.enableMagnet;
+    toReturn.manualEnabled = false;
+
+    return toReturn;
+}
