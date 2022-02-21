@@ -8,10 +8,10 @@
 
 
 struct DataIn{
-    float posX = 0;
-    float posY = 0;
-    float tacoX = 0;
-    float tacoY = 0;
+    short posX = 0;
+    short posY = 0;
+    short tacoX = 0;
+    short tacoY = 0;
     int joystickX = 0;
     int joystickY = 0;
     bool enableMagnet = 0;

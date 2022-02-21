@@ -24,7 +24,8 @@ struct ConvertedData{
 
 short posY_Converter(int input);
 short posX_Converter(int input);
-
+float tacoX_Converter(int input);
+float tacoY_Converter(int input);
 
 struct DataOut manualControl (ConvertedData convertedData);
     

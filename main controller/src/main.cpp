@@ -68,7 +68,7 @@ void TaskInputThread(void *pvParameters __attribute__((unused))){
 	Serial.println("Input thread started");
 	vTaskDelay(1);
 	while(true){
-			localDataIn = readInput();
+		localDataIn = readInput();
 
 		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, takes semaphore if so.
 			dataIn = localDataIn;
@@ -105,8 +105,8 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 
 		convertedData.joystickX = localDataIn.joystickX;
 		convertedData.joystickY = localDataIn.joystickY;
-		//convertedData.tacoX = taco_Converter(localDataIn.tacoX);
-		//convertedData.tacoY = taco_Converter(localDataIn.tacoY);
+		//convertedData.tacoX = tacoX_Converter(localDataIn.tacoX);
+		//convertedData.tacoY = tacoY_Converter(localDataIn.tacoY);
 		convertedData.posX = posX_Converter(localDataIn.posX);
 		convertedData.posY = posY_Converter(localDataIn.posY);
 		convertedData.enableMagnet = localDataIn.enableMagnet;
@@ -139,8 +139,6 @@ void TaskMainThread(void *pvParameters __attribute__((unused))){
 		vTaskDelayUntil(&lastWakeTime, updateFrequency);
     }
 }
-
-
 
 void TaskOutputThread(void *pvParameters __attribute__((unused))){
 

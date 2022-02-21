@@ -29,6 +29,16 @@ short posX_Converter(int input){
 	return short(toReturn*1000);
 }
 
+float tacoX_Converter(int input){
+    short toReturn = 0;
+    return toReturn;
+}
+float tacoY_Converter(int input){
+    short toReturn = 0;
+    return toReturn;
+}
+
+
 bool joystickDeadZone(float dataJoystick){
     bool toReturn;
     float buffer = 5;
