@@ -8,7 +8,7 @@ DataIn readInput(void){
     toReturn.enableMagnet = digitalRead(pins.enableMagnet);
     toReturn.enableManual = digitalRead(pins.enableManual);
     toReturn.joystickX = analogRead(pins.joystickX);
-    toReturn.joystickY = analogRead(pins.joystickY);
+    toReturn.joystickY = 1023-analogRead(pins.joystickY);
     //toReturn.tacoX = analogRead(pins.tacoX);
     //toReturn.tacoY = analogRead(pins.tacoY);
     toReturn.posX = analogRead(pins.posX);
