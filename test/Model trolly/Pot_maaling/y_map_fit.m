@@ -1,6 +1,6 @@
-in = readtable("trolley pos.csv"); 
+in = readtable("head pos.csv"); 
 
-mean = (in.vh+in.hv)./2
+mean = (in.HF+in.FH)./2
 
 [p1,S1] = polyfit(mean,in.Pos,1)
 
@@ -10,12 +10,12 @@ y1 = polyval(p1,x1);
 plot(mean,in.Pos,'o',x1,y1)
 grid on
 
-text(120,3.8,'y=0.0048x-0.6765')
-title('Mean ADC-reading as function of x-position')
+text(10,1.27,'y=0.0015x-0.0025')
+title('Mean ADC-reading as function of y-position')
 set(gcf,'position',[0.4,-0.5,500,300])
 
 xlabel('Mean ADC-reading [.]')
-ylabel('X-pos [m]')
+ylabel('Y-pos [m]')
 legend('Mean ADC-reading','Linear regression')
 %% 
 
@@ -26,4 +26,4 @@ x0=0;
    height=300;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
-exportgraphics(gcf,'x_map_fit.pdf','ContentType','vector')
+exportgraphics(gcf,'y_map_fit.pdf','ContentType','vector')
