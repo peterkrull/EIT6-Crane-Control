@@ -10,10 +10,6 @@
             "includePath": [
                 "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
                 "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
-                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
-                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
-                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
-                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
@@ -28,10 +24,6 @@
                 "path": [
                     "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
                     "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
-                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/MainThreadFunc",
-                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/OutputThreadFunc",
-                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/InputThreadFunc",
-                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/lib/FreeRTOS/src",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",

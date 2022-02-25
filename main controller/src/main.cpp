@@ -1,197 +1,122 @@
-#include <Arduino_FreeRTOS.h>
-#include <semphr.h>
-#include <InputThreadFunc.h>
-#include <MainThreadFunc.h>
-#include <OutputThreadFunc.h>
+//Include libraries  
+#include <Arduino.h>
+#include <manuelFunctions.h>
+
+//Define input pins
+#define joystick_x A9
+#define joystick_y A8
+#define joystick_sw A10
+#define magnet_sw 2
+#define auto_manuel_sw 3
+#define x_pos A0
+#define y_pos A1
+
+//Define output pins
+#define enable_x 8
+#define enable_y 9
+#define pwm_x 10
+#define pwm_y 11
+
+//Global input variables
+float joystickX = 0;
+float joystickY = 0;
+bool joystickSw = 0;
+bool magnetSw = 0;
+bool autoManuelSw = 0;
+int xPos = 0; 
+int yPos = 0;
+float angle = 0;
+
+//Global output variables
+int pwmX = 127;
+int pwmY = 127;
 
 
-SemaphoreHandle_t dataIn_semaphore;
-SemaphoreHandle_t dataOut_semaphore;
-SemaphoreHandle_t serial3_semaphore;
+void setup() {
 
+  //Set input pinMode
+  pinMode(joystick_x,INPUT);
+  pinMode(joystick_y,INPUT);
+  pinMode(joystick_sw,INPUT);
+  pinMode(magnet_sw,INPUT);
+  pinMode(auto_manuel_sw,INPUT);
+  pinMode(x_pos,INPUT);
+  pinMode(y_pos,INPUT);
 
-void TaskInputThread(void *pvParameters);
-void TaskMainThread(void *pvParameters);
-void TaskOutputThread(void *pvParameters);
+  //Set output pinMode
+  pinMode(enable_x,OUTPUT);
+  pinMode(enable_y,OUTPUT);
+  pinMode(pwm_x,OUTPUT);
+  pinMode(pwm_y,OUTPUT);
 
+  //Iniliziaze serial
+  Serial3.begin(9600);
+  Serial.begin(115200);
 
-struct DataIn dataIn;
-struct DataOut dataOut;
+  Serial.println("Starting...");
+}
 
+//Reads all inputs to the system
+void input() {
+  joystickX = analogRead(joystick_x);
+  joystickY = analogRead(joystick_y);
+  joystickSw = digitalRead(joystick_sw);
+  magnetSw = digitalRead(magnet_sw);
+  autoManuelSw = digitalRead(auto_manuel_sw);
+  xPos = analogRead(x_pos);
+  yPos = analogRead(y_pos);
 
+  Serial.println(joystickX);
 
-void setup(){
-	
-    Serial.begin(115200);
-	Serial3.begin(9600);
-	if(Serial3.available()>0) Serial3.readString();
-	
-	Serial.println("Serial begun");
-	Serial.print("tickConfig ");Serial.println(configTICK_RATE_HZ);
+  //Reads angle data from head
+   //if (Serial3.available() > 0) {
+    //String angleData;
+    //angleData = Serial3.readString();
+    //angle = angleData.toFloat();
+   //}
+}
 
-    dataIn_semaphore = xSemaphoreCreateMutex();
-	if(dataIn_semaphore != NULL) xSemaphoreGive(dataIn_semaphore);
-    dataOut_semaphore = xSemaphoreCreateMutex();
-    if(dataOut_semaphore != NULL) xSemaphoreGive(dataOut_semaphore);
-	serial3_semaphore = xSemaphoreCreateMutex();
-    if(serial3_semaphore != NULL) xSemaphoreGive(serial3_semaphore);
-	//Serial.println("Semaphores created");
+//Manuel control
+void manuel() {
+  //Determines the pwm value from joystick position
+  pwmX = joystickOutputFormat(joystickX);
+  pwmY = 255 - joystickOutputFormat(joystickY);
 
-    xTaskCreate(TaskInputThread, "InputThread",2048, NULL, 3, NULL);
-    xTaskCreate(TaskMainThread, "mainThread",512, NULL, 2, NULL);
-    xTaskCreate(TaskOutputThread, "OutputThread",512, NULL, 1, NULL);
-	
+  //Sends pwm signals to motor driver x
+  if (joystickDeadZone(joystickX) == 1) {
+    analogWrite(pwm_x,pwmX);
+    digitalWrite(enable_x, HIGH);
+  }
+  else {
+    analogWrite(pwm_x,127);
+    digitalWrite(enable_x, LOW);
+  }
+
+  //Sends pwm signals to motor driver y
+  if (joystickDeadZone(joystickY) == 1) {
+    analogWrite(pwm_y,pwmY);
+    digitalWrite(enable_y, HIGH);
+  }
+  else {
+    analogWrite(pwm_y,127);
+    digitalWrite(enable_y, LOW);
+  }
+
+}
+
+void automatic() {
+
 }
 
 
-void loop(){
-	
-}
+void loop() {
+  input();
 
-
-void TaskInputThread(void *pvParameters __attribute__((unused))){
-	//thread timing variables
-	TickType_t lastWakeTime;
-	const TickType_t updateFrequency = 1; //Number of ticks between each update
-
-	lastWakeTime = xTaskGetTickCount();
-
-	InputPins pins;
-
-	pinMode(pins.enableMagnet, INPUT);
-	pinMode(pins.enableManual, INPUT);
-
-
-	struct DataIn localDataIn;
-
-
-	Serial.println("Input thread started");
-	vTaskDelay(1);
-	while(true){
-		localDataIn = readInput();
-
-		if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){ //Checks if semaphore is free, takes semaphore if so.
-			dataIn = localDataIn;
-			
-			xSemaphoreGive(dataIn_semaphore); //releases semaphore
-		}
-		else Serial.println("dataIn_semaphore not free, could not update");
-		vTaskDelayUntil(&lastWakeTime, updateFrequency);
-
-	}
-}
-
-void TaskMainThread(void *pvParameters __attribute__((unused))){
-
-    struct DataIn localDataIn;
-    DataOut localDataOut;
-	ConvertedData convertedData;
-
-	TickType_t lastWakeTime = xTaskGetTickCount();
-	const TickType_t updateFrequency = 1; //Number of ticks between each update
-
-	Serial.println("Main thread started");
-
-	vTaskDelay(1);
-
-    while(true){
-		int prev_time = localDataIn.measurementTime;
-        if(xSemaphoreTake(dataIn_semaphore, (TickType_t) 5) == pdTRUE){
-             localDataIn = dataIn;
-             xSemaphoreGive(dataIn_semaphore);
-        }
-
-		Serial.print("delta_time: "); Serial.println(localDataIn.measurementTime-prev_time);		
-
-		convertedData.joystickX = localDataIn.joystickX;
-		convertedData.joystickY = localDataIn.joystickY;
-		//convertedData.tacoX = tacoX_Converter(localDataIn.tacoX);
-		//convertedData.tacoY = tacoY_Converter(localDataIn.tacoY);
-		convertedData.posX = posX_Converter(localDataIn.posX);
-		convertedData.posY = posY_Converter(localDataIn.posY);
-		convertedData.enableMagnet = localDataIn.enableMagnet;
-		convertedData.enableManual = localDataIn.enableManual;
-
-		Serial.print("joyX: ");Serial.println(convertedData.joystickX);
-		Serial.print("joyY: ");Serial.println(convertedData.joystickY);
-		Serial.print("posX: ");Serial.println(convertedData.posX);
-		Serial.print("posY: ");Serial.println(convertedData.posY);
-		Serial.print("enableMagnet: ");Serial.println(convertedData.enableMagnet);
-		Serial.print("enableManual: ");Serial.println(convertedData.enableManual);
-		Serial.print("angle: ");Serial.println(localDataIn.headAngle);
-
-
-        switch (localDataIn.enableManual){
-			case 1:
-				localDataOut = manualControl(convertedData);
-				break;
-			case 0:
-				localDataOut = autonomousCountrol(convertedData);
-				break;
-			default:
-				break;
-        }
-
-        if(xSemaphoreTake(dataOut_semaphore, (TickType_t) 5) == pdTRUE){
-             dataOut = localDataOut;
-             xSemaphoreGive(dataOut_semaphore);
-        }
-		vTaskDelayUntil(&lastWakeTime, updateFrequency);
-    }
-}
-
-void TaskOutputThread(void *pvParameters __attribute__((unused))){
-
-    DataOut localDataOut;
-
-	TickType_t lastWakeTime = xTaskGetTickCount();
-	const TickType_t updateFrequency = 1; //Number of ticks between each update
-
-	const unsigned short pwmX = 10;
-	const unsigned short pwmY = 11;
-	const unsigned short enableX = 8;
-	const unsigned short enableY = 9;
-	const unsigned short magnetEnable = 2;
-	const unsigned short magnetLED = 50; //blue wire
-	const unsigned short manualLED = 52; //green wire
-  
-	pinMode(pwmX,OUTPUT);
-	pinMode(pwmY,OUTPUT);
-	pinMode(enableX,OUTPUT);
-	pinMode(enableY,OUTPUT);
-	pinMode(magnetEnable,OUTPUT);
-	pinMode(magnetLED, OUTPUT);
-	pinMode(manualLED, OUTPUT);
-
-	Serial.println("Output thread started");
-    while (true)
-    {
-        if(xSemaphoreTake(dataOut_semaphore, (TickType_t) 5) == pdTRUE){
-			localDataOut = dataOut;
-			xSemaphoreGive(dataOut_semaphore);
-        }
-
-		bool tempMagnetEnable = localDataOut.magnetEnable;
-		String magnetOn = String("M" + String(tempMagnetEnable));
-
-		//vTaskSuspendAll();
-		Serial.print("enableX");Serial.println(localDataOut.enableX);		
-		Serial.print("enableY");Serial.println(localDataOut.enableY);
-		Serial.print("pwmX");Serial.println(localDataOut.pwmX);
-		Serial.print("pwmY");Serial.println(localDataOut.pwmY);
-		Serial.print("enableMagnet");Serial.print(localDataOut.magnetEnable);
-		Serial.println(magnetOn);
-		
-
-		analogWrite(pwmX,localDataOut.pwmX);
-		analogWrite(pwmY,localDataOut.pwmY);
-		digitalWrite(enableX,localDataOut.enableX);
-		digitalWrite(enableY,localDataOut.enableY);
-		Serial3.println(magnetOn);
-		digitalWrite(manualLED, localDataOut.manualEnabled);
-		digitalWrite(magnetLED, localDataOut.magnetEnable);
-		
-
-		vTaskDelayUntil(&lastWakeTime, updateFrequency);
-    }
+  //Determines manuel or automatic operation
+  if(autoManuelSw == 1) {
+  manuel();
+  }
+  else{
+    automatic();
+  }
 }
