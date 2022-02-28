@@ -5,6 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h>
+#include "sigProc.h"
 
 // Definitions for screen
 #define SCREEN_WIDTH 128
@@ -156,8 +157,10 @@ void manuel() {
 void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
+
 }
 
+low_pass oled_freq_lp = low_pass(0.2);
 
 // Display system information on OLED
 void screen() {
@@ -175,7 +178,7 @@ void screen() {
     display.setCursor(0,10);
     display.println(("A "+String(angle)));
     display.setCursor(50,10);
-    display.println(("Hz "+String(1e6/float(delta))));
+    display.println(("Hz "+String(1e6/float(oled_freq_lp.update(delta)))));
 
     display.display();
   }
