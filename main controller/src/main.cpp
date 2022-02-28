@@ -1,4 +1,4 @@
-//Include libraries  
+// Include libraries  
 #include <Arduino.h>
 #include <manuelFunctions.h>
 #include <Wire.h>
@@ -6,14 +6,15 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h>
 
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+// Definitions for screen
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET     -1
+#define SCREEN_ADDRESS 0x3C
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-//Define input pins
+// Define input pins
 #define joystick_x A9
 #define joystick_y A8
 #define joystick_sw A10
@@ -24,30 +25,33 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define magnet_led 50
 #define auto_manuel_led 52
 
-//Define output pins
+// Define output pins
 #define enable_x 8
 #define enable_y 9
 #define pwm_x 10
 #define pwm_y 11
 
-//Global input variables
+// Global input variables
 float joystickX = 0;
 float joystickY = 0;
 bool joystickSw = 0;
 bool magnetSw = 0;
 bool autoManuelSw = 0;
-int xPos = 0; 
-int yPos = 0;
+float xPos = 0; 
+float yPos = 0;
 float angle = 0;
 
-//Global output variables
+// Global output variables
 int pwmX = 127;
 int pwmY = 127;
 
+uint32_t prevTime;
+uint16_t delta;
+uint32_t screenTimer;
 
 void setup() {
 
-  //Set input pinMode
+  // Set input pinMode
   pinMode(joystick_x,INPUT);
   pinMode(joystick_y,INPUT);
   pinMode(joystick_sw,INPUT);
@@ -56,7 +60,7 @@ void setup() {
   pinMode(x_pos,INPUT);
   pinMode(y_pos,INPUT);
 
-  //Set output pinMode
+  // Set output pinMode
   pinMode(enable_x,OUTPUT);
   pinMode(enable_y,OUTPUT);
   pinMode(pwm_x,OUTPUT);
@@ -64,61 +68,58 @@ void setup() {
   pinMode(auto_manuel_led,OUTPUT);
   pinMode(magnet_led,OUTPUT);
 
-  //Iniliziaze serial
+  // Initialize serial
   Serial3.begin(9600);
   Serial.begin(115200);
 
-  //Iniliziaze screen
+  // Initialize screen
   delay(2000);
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
-  // Clear the buffer
   display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
   display.println(F("Wait crane starting.."));
-  display.setCursor(0,20);             // Start at top-left corner
+  display.setCursor(0,20);
   display.println(F("EIT6 CE6 630"));
   display.display();
-  delay(2000); // Pause for 2 seconds
+  delay(2000);
 
+  // Printing starting on serial 0
   Serial.println("Starting...");
 }
 
-//Reads all inputs to the system
+// Reads all inputs to the system
 void input() {
   joystickX = analogRead(joystick_x);
   joystickY = analogRead(joystick_y);
   joystickSw = digitalRead(joystick_sw);
   magnetSw = digitalRead(magnet_sw);
   autoManuelSw = digitalRead(auto_manuel_sw);
-  xPos = analogRead(x_pos);
-  yPos = analogRead(y_pos);
+  xPos = 0.0048*analogRead(x_pos)-0.6765;
+  yPos = 0.0015*analogRead(y_pos)-0.0025;
 
   // Reads angle data from head
   if (Serial3.available() > 0) {
-    Serial.println("Serial3 is available : "+String(Serial3.available()));
     String angleData;
     angleData = Serial3.readStringUntil(*"\n");
-    Serial.println("String has been read : "+angleData);
     angle = angleData.toFloat();
-    Serial.println("String has been converted : "+String(angle));
   }
 }
 
 //Manuel control
 void manuel() {
-  //Turns on LED when in manuel control
+  // Turns on LED when in manuel control
   digitalWrite(auto_manuel_led,HIGH);
 
-  //Determines the pwm value from joystick position
+  // Determines the pwm value from joystick position
   pwmX = joystickOutputFormat(joystickX);
   pwmY = 255 - joystickOutputFormat(joystickY);
 
-  //Sends pwm signals to motor driver x
+  // Sends pwm signals to motor driver x
   if (joystickDeadZone(joystickX) == 1) {
     analogWrite(pwm_x,pwmX);
     digitalWrite(enable_x, HIGH);
@@ -128,7 +129,7 @@ void manuel() {
     digitalWrite(enable_x, LOW);
   }
 
-  //Sends pwm signals to motor driver y
+  // Sends pwm signals to motor driver y
   if (joystickDeadZone(joystickY) == 1) {
     analogWrite(pwm_y,pwmY);
     digitalWrite(enable_y, HIGH);
@@ -138,7 +139,7 @@ void manuel() {
     digitalWrite(enable_y, LOW);
   }
 
-  //Turns on LED when magnet is active
+  // Turns on LED when magnet is active
   if (magnetSw == 1)
   {
     digitalWrite(magnet_led,HIGH);
@@ -148,40 +149,57 @@ void manuel() {
     digitalWrite(magnet_led,LOW);
     Serial3.println("M0");
   }
-  
-
 }
 
 
-//Automatic control
+// Automatic control
 void automatic() {
-  //Turn off LED when automatic control is enabled
+  // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
-
 }
 
+
+// Display system information on OLED
 void screen() {
-  display.clearDisplay();
+  if (1e6/(micros()-screenTimer) < 30){
+    screenTimer = micros();
 
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);        // Draw white text
-  display.setCursor(0,0);             // Start at top-left corner
-  display.println((String(joystickX)));
+    display.clearDisplay();
 
-  display.display();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0,0);
+    display.println(("X "+String(xPos)));
+    display.setCursor(50,0);
+    display.println(("Y "+String(yPos)));
+    display.setCursor(0,10);
+    display.println(("A "+String(angle)));
+    display.setCursor(50,10);
+    display.println(("Hz "+String(1e6/float(delta))));
+
+    display.display();
+  }
 }
+
 
 
 void loop() {
+
+  // Calculate loop time
+  uint32_t xmicros = micros();
+  delta = xmicros - prevTime;
+  prevTime = xmicros;
+
+  // Reads inputs
   input();
 
-  //Determines manuel or automatic operation
+  // Determines manuel or automatic operation
   if(autoManuelSw == 1) {
     manuel();
-  }
-  else{
+  } else {
     automatic();
   }
 
+  // Update screen contents
   screen();
 }
