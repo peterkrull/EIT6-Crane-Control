@@ -1,6 +1,17 @@
 //Include libraries  
 #include <Arduino.h>
 #include <manuelFunctions.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_I2CDevice.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Define input pins
 #define joystick_x A9
@@ -10,6 +21,8 @@
 #define auto_manuel_sw 3
 #define x_pos A0
 #define y_pos A1
+#define magnet_led 50
+#define auto_manuel_led 52
 
 //Define output pins
 #define enable_x 8
@@ -48,10 +61,29 @@ void setup() {
   pinMode(enable_y,OUTPUT);
   pinMode(pwm_x,OUTPUT);
   pinMode(pwm_y,OUTPUT);
+  pinMode(auto_manuel_led,OUTPUT);
+  pinMode(magnet_led,OUTPUT);
 
   //Iniliziaze serial
   Serial3.begin(9600);
   Serial.begin(115200);
+
+  //Iniliziaze screen
+  delay(2000);
+  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  // Clear the buffer
+  display.clearDisplay();
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0,0);             // Start at top-left corner
+  display.println(F("Wait crane starting.."));
+  display.setCursor(0,20);             // Start at top-left corner
+  display.println(F("EIT6 CE6 630"));
+  display.display();
+  delay(2000); // Pause for 2 seconds
 
   Serial.println("Starting...");
 }
@@ -66,18 +98,22 @@ void input() {
   xPos = analogRead(x_pos);
   yPos = analogRead(y_pos);
 
-  Serial.println(joystickX);
-
-  //Reads angle data from head
-   //if (Serial3.available() > 0) {
-    //String angleData;
-    //angleData = Serial3.readString();
-    //angle = angleData.toFloat();
-   //}
+  // Reads angle data from head
+  if (Serial3.available() > 0) {
+    Serial.println("Serial3 is available : "+String(Serial3.available()));
+    String angleData;
+    angleData = Serial3.readStringUntil(*"\n");
+    Serial.println("String has been read : "+angleData);
+    angle = angleData.toFloat();
+    Serial.println("String has been converted : "+String(angle));
+  }
 }
 
 //Manuel control
 void manuel() {
+  //Turns on LED when in manuel control
+  digitalWrite(auto_manuel_led,HIGH);
+
   //Determines the pwm value from joystick position
   pwmX = joystickOutputFormat(joystickX);
   pwmY = 255 - joystickOutputFormat(joystickY);
@@ -102,10 +138,37 @@ void manuel() {
     digitalWrite(enable_y, LOW);
   }
 
+  //Turns on LED when magnet is active
+  if (magnetSw == 1)
+  {
+    digitalWrite(magnet_led,HIGH);
+    Serial3.println("M1");
+  }
+  else{
+    digitalWrite(magnet_led,LOW);
+    Serial3.println("M0");
+  }
+  
+
 }
 
-void automatic() {
 
+//Automatic control
+void automatic() {
+  //Turn off LED when automatic control is enabled
+  digitalWrite(auto_manuel_led, LOW);
+
+}
+
+void screen() {
+  display.clearDisplay();
+
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(SSD1306_WHITE);        // Draw white text
+  display.setCursor(0,0);             // Start at top-left corner
+  display.println((String(joystickX)));
+
+  display.display();
 }
 
 
@@ -114,9 +177,11 @@ void loop() {
 
   //Determines manuel or automatic operation
   if(autoManuelSw == 1) {
-  manuel();
+    manuel();
   }
   else{
     automatic();
   }
+
+  screen();
 }

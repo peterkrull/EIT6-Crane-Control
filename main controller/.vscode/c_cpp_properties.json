@@ -10,13 +10,16 @@
             "includePath": [
                 "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
                 "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit SSD1306",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit GFX Library",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit BusIO",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -24,13 +27,16 @@
                 "path": [
                     "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/include",
                     "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/src",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit SSD1306",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit GFX Library",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "c:/Users/Jakob Gammelgaard/Documents/GitHub/EIT6-Crane-Control/main controller/.pio/libdeps/megaatmega2560/Adafruit BusIO",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/Jakob Gammelgaard/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
                 ]
             },
