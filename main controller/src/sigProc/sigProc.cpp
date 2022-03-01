@@ -21,6 +21,29 @@ void low_pass::restart(double value){
     output_val = value;
 }
 
+lead_lag::lead_lag(float a = 0, float b = 0, float k = 0){
+    xa = a;
+    xb = b;
+    xk = k
+}
+
+double lead_lag::update(double input){
+    uint32_t xtime = micros();
+    double outsig = update(input,xtime-prev_time);
+    prev_time = xtime;
+    return outsig;
+}
+
+double lead_lag::update(double input,uint32_t dtime){
+    float a = dtime/(dtime+(xTau*1000000));
+    output_val = output_val*(1-a)+input*a;
+    return output_val;
+}
+
+void lead_lag::restart(double value){
+    output_val = value;
+}
+
 PID::PID(double Kp, double Ki, double Kd, float tau){
     xKp = Kp;
     xKi = Ki;
