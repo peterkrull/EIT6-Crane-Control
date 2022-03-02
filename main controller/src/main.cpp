@@ -161,12 +161,29 @@ void manuel() {
   }
 }
 
+lead_lag x_con = lead_lag(66.6,6.66,1);
+
+float ref = 2;
 
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
 
+  if (Serial.available()>0){
+    ref = Serial.readStringUntil(*"\n").toFloat();
+    if (ref > 3) ref = 3;
+    if (ref < 1) ref = 1;
+  }
+
+  double conOut = x_con.update(ref-xContainer);
+  uint8_t pwm = currentToPwm(conOut);
+  pwmX = endstop(pwm,1,3,xPos);
+  Serial.println("PWM output: "+String(pwmX)+" ref: "+String(ref)+" conOut: "+String(conOut)+" PWM: "+String(pwm));
+
+  // Outputs the PWM signal
+  digitalWrite(enable_x, HIGH);
+  analogWrite(pwm_x,pwmX);
 }
 
 low_pass oled_freq_lp = low_pass(0.2);
@@ -217,5 +234,5 @@ void loop() {
   }
 
   // Update screen contents
-  screen();
+  //screen();
 }

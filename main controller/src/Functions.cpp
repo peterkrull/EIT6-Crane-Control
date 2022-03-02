@@ -43,12 +43,18 @@ int endstop(int pwm, float min, float max, float pos){
     return pwmEndstop;
 }
 
-int8_t currentToPwm(float current) {
+uint8_t currentToPwm(float current) {
+
+    //Serial.print("Curr in : "+String(current));
 
     if (current > 10) current = 10;
     if (current < -10) current = -10;
 
+    //Serial.print(" Curr lim : "+String(current));
+
     float pwm = 10.2*current+127.5;
+
+    //Serial.print(" PWM : "+String(pwm));
 
     if (current < 0) {
         pwm = pwm - 23.5;
@@ -56,10 +62,16 @@ int8_t currentToPwm(float current) {
          pwm = pwm + 23.5;
     }
 
-    int8_t returnPwm = (int8_t)pwm;
+    //Serial.print(" PWM lin : "+String(pwm));
 
-    if ((int8_t)pwm > 255*0.9) returnPwm = (int8_t)255*0.9;
-    else if ((int8_t)pwm < 255*0.1) returnPwm = (int8_t)255*0.1;
+    uint8_t returnPwm = (uint8_t)pwm;
+
+    //Serial.print(" ret PWM : "+String(returnPwm));
+
+    if ((uint8_t)pwm > 255*0.9) returnPwm = (uint8_t)255*0.9;
+    else if ((uint8_t)pwm < 255*0.1) returnPwm = (uint8_t)255*0.1;
+    
+    //Serial.println(" ret PWM fin : "+String(returnPwm));
     
     return returnPwm ;    
 }
