@@ -16,11 +16,12 @@ class lead_lag{
     public:
         lead_lag(float a = 0, float b = 0, float k = 0);
         double update(double input);
-        double update(double input,uint32_t dtime);
+        double update(double input,float dtime);
         void restart(double value = 0);
     private:
         float xa,xb,xk;
-        uint32_t prev_time, prev_error, prev_output;
+        float prev_error, prev_output;
+        uint32_t prev_time;
 };
 
 class PID{

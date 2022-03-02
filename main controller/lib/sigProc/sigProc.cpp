@@ -29,14 +29,13 @@ lead_lag::lead_lag(float a, float b, float k){
 
 double lead_lag::update(double input){
     uint32_t xtime = micros();
-    double outsig = update(input,xtime-prev_time);
+    double outsig = update(input,float(xtime-prev_time)/1e6);
     prev_time = xtime;
     return outsig;
 }
 
-double lead_lag::update(double input, uint32_t dtime){
-
-    float output_val = (xk*(input*(1+xa*dtime)-prev_error)+prev_output)/(1+xb*dtime);
+double lead_lag::update(double input, float dtime){
+    float output_val = (xk*(input*(1+xa*dtime)-prev_error)+prev_output)/(1+xb*(dtime));
     prev_output = output_val;
     prev_error = input;
     
