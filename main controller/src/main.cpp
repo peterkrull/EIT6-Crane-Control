@@ -1,6 +1,6 @@
 // Include libraries  
 #include <Arduino.h>
-#include <manuelFunctions.h>
+#include <Functions.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -12,7 +12,6 @@
 #define SCREEN_HEIGHT 32
 #define OLED_RESET     -1
 #define SCREEN_ADDRESS 0x3C
-
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Define input pins
@@ -46,6 +45,7 @@ float angle = 0;
 int pwmX = 127;
 int pwmY = 127;
 
+// Time variables
 uint32_t prevTime;
 uint16_t delta;
 uint32_t screenTimer;
@@ -125,7 +125,7 @@ void manuel() {
   // Turns on LED when in manuel control
   digitalWrite(auto_manuel_led,HIGH);
 
-  // Determines the pwm value from joystick position
+  // Determines the pwm value from joystick position with software endstop (endstop(pwm, min, max, pos))
   pwmX = endstop(joystickOutputFormat(joystickX), 0.5, 3.5, xPos);
   pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.5, 1.22, yPos);
 
@@ -149,7 +149,7 @@ void manuel() {
     digitalWrite(enable_y, LOW);
   }
 
-  // Turns on LED when magnet is active
+  // Turns on LED and magnet when magnet switch is active
   if (magnetSw == 1)
   {
     digitalWrite(magnet_led,HIGH);
