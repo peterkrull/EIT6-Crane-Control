@@ -21,7 +21,7 @@ void low_pass::restart(double value){
     output_val = value;
 }
 
-lead_lag::lead_lag(float a = 0, float b = 0, float k = 0){
+lead_lag::lead_lag(float a, float b, float k){
     xa = a;
     xb = b;
     xk = k;
@@ -36,9 +36,9 @@ double lead_lag::update(double input){
 
 double lead_lag::update(double input, uint32_t dtime){
 
-    output_val = (xk*(input*(1+x.a*dtime)-prev_error)+prev_output)/(1+xb*dtime);
+    float output_val = (xk*(input*(1+xa*dtime)-prev_error)+prev_output)/(1+xb*dtime);
     prev_output = output_val;
-    prev_error = input
+    prev_error = input;
     
     return output_val;
 }
