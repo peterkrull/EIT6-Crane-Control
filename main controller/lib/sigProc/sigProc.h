@@ -12,6 +12,17 @@ class low_pass{
         double output_val;
 };
 
+class lead_lag{
+    public:
+        lead_lag(float a = 0, float b = 0, float k = 0);
+        double update(double input);
+        double update(double input,uint32_t dtime);
+        void restart(double value = 0);
+    private:
+        float xa,xb,xk;
+        uint32_t prev_time, prev_error, prev_output;
+};
+
 class PID{
     public:
         PID(double Kp = 0 , double Ki = 0 , double Kd = 0 , float tau = 0);
