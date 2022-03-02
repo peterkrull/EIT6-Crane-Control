@@ -6,13 +6,13 @@
 MPU6050 mpu;
 boolean init_success = false;
 
-#define PIN_MAGNET 10
-#define PIN_MAGLED 11
+#define PIN_MAGNET 12
+#define PIN_MAGLED 4
 //#define PRINTING
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(LED_BUILTIN,OUTPUT);
   pinMode(PIN_MAGNET,OUTPUT);
 
@@ -28,8 +28,8 @@ void setup() {
     #ifdef PRINTING
     Serial.println("Calibrating MPU");
     #endif
-    mpu.CalibrateAccel(10);
-    mpu.CalibrateGyro(10);
+    mpu.CalibrateAccel(6);
+    mpu.CalibrateGyro(6);
     mpu.setDMPEnabled(true);
     
     mpu.setDLPFMode(MPU6050_DLPF_BW_188);
@@ -39,12 +39,12 @@ void setup() {
     digitalWrite(LED_BUILTIN,HIGH);
     init_success = true;
   } 
-  #ifdef PRINTING
   else {
+    #ifdef PRINTING
     Serial.println("MPU setup FAILED!");
+    #endif
     init_success = false;
   }
-  #endif
 }
 
 void loop() {
@@ -66,10 +66,10 @@ void loop() {
       // Read for magnet command
       if (rcv.indexOf("M1")>-1){
         digitalWrite(PIN_MAGNET,HIGH);
-        digitalWrite(PIN_MAGLED,HIGH);
+        //digitalWrite(PIN_MAGLED,HIGH);
       } else if (rcv.indexOf("M0")>-1){
         digitalWrite(PIN_MAGNET,LOW);
-        digitalWrite(PIN_MAGLED,LOW);
+        //digitalWrite(PIN_MAGLED,LOW);
       }
     } 
   } else {
