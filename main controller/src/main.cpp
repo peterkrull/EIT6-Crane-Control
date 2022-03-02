@@ -50,6 +50,10 @@ uint32_t prevTime;
 uint16_t delta;
 uint32_t screenTimer;
 
+// Container pos
+float xContainer = 0;
+float yContainer = 0;
+
 void setup() {
 
   // Set input pinMode
@@ -109,6 +113,11 @@ void input() {
     angleData = Serial3.readStringUntil(*"\n");
     angle = angleData.toFloat();
   }
+
+  // Calculate container pos
+  xContainer = xPos+(sin((angle*PI)/180))*yPos;
+  yContainer = yPos+(cos((angle*PI)/180))*yPos;
+
 }
 
 //Manuel control
@@ -117,8 +126,8 @@ void manuel() {
   digitalWrite(auto_manuel_led,HIGH);
 
   // Determines the pwm value from joystick position
-  pwmX = joystickOutputFormat(joystickX);
-  pwmY = 255 - joystickOutputFormat(joystickY);
+  pwmX = endstop(joystickOutputFormat(joystickX), 0.5, 3.5, xPos);
+  pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.5, 1.22, yPos);
 
   // Sends pwm signals to motor driver x
   if (joystickDeadZone(joystickX) == 1) {
@@ -173,12 +182,16 @@ void screen() {
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(0,0);
     display.println(("X "+String(xPos)));
-    display.setCursor(50,0);
+    display.setCursor(70,0);
     display.println(("Y "+String(yPos)));
     display.setCursor(0,10);
     display.println(("A "+String(angle)));
-    display.setCursor(50,10);
+    display.setCursor(70,10);
     display.println(("Hz "+String(1e6/float(oled_freq_lp.update(delta)))));
+    display.setCursor(0,20);
+    display.println(("Xc "+String(xContainer)));
+    display.setCursor(70,20);
+    display.println(("Yc "+String(yContainer)));
 
     display.display();
   }
