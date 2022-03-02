@@ -21,7 +21,7 @@ void low_pass::restart(double value){
     output_val = value;
 }
 
-lead_lag::lead_lag(float a = 0, float b = 0, float k = 0){
+lead_lag::lead_lag(float a, float b, float k){
     xa = a;
     xb = b;
     xk = k;
