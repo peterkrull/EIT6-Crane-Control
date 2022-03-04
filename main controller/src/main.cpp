@@ -115,8 +115,8 @@ void input() {
   }
 
   // Calculate container pos
-  xContainer = xPos+(sin((angle*PI)/180))*yPos;
-  yContainer = yPos+(cos((angle*PI)/180))*yPos;
+  xContainer = xPos+(sin((-angle*PI)/180))*yPos;
+  yContainer = yPos+(cos((-angle*PI)/180))*yPos;
 
 }
 
@@ -161,9 +161,10 @@ void manuel() {
   }
 }
 
-lead_lag x_con = lead_lag(66.6,6.66,1);
-
 float ref = 2;
+
+PID xPid = PID(6,0,3);
+low_pass oled_freq_lp = low_pass(0.2);
 
 // Automatic control
 void automatic() {
@@ -176,17 +177,18 @@ void automatic() {
     if (ref < 1) ref = 1;
   }
 
-  double conOut = x_con.update(ref-xContainer);
+  double conOut = xPid.update(ref-xContainer);
+  // double conOut = 3*(ref-xContainer);
   uint8_t pwm = currentToPwm(conOut);
   pwmX = endstop(pwm,1,3,xPos);
-  Serial.println("PWM output: "+String(pwmX)+" ref: "+String(ref)+" conOut: "+String(conOut)+" PWM: "+String(pwm));
+  //Serial.println("PWM output: "+String(pwmX)+" ref: "+String(ref)+" conOut: "+String(conOut)+" PWM: "+String(pwm)+" Cable len: "+String(yPos));
+  Serial.println(String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
 
   // Outputs the PWM signal
   digitalWrite(enable_x, HIGH);
   analogWrite(pwm_x,pwmX);
 }
 
-low_pass oled_freq_lp = low_pass(0.2);
 
 // Display system information on OLED
 void screen() {
