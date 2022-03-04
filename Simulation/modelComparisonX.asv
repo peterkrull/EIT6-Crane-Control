@@ -1,0 +1,3 @@
+readmatrix(..//test)
+
+plot(out.x_pos)
