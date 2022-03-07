@@ -167,9 +167,7 @@ step(h)
 %%
 %plot model with data
 syms s t
-b = 0.2
-i3 = 0.7e-3;
-m3 = m+(i3/r3);
+b = 0.1
 h = (ke*tg)/(r3*m3*(s+(b/m3)))
 r = ilaplace(h*(1/s))
 
@@ -177,23 +175,11 @@ ht = matlabFunction(r)
 
 x = linspace(0,10,200);
 y_26 = ht(x)*9.9;
-y_51 = ht(x)*7.45;
-y_77 = ht(x)*4.9;
-y_153 = ht(x)*-2.55;
-y_178 = ht(x)*-5;
-y_230 = ht(x)*-10;
+y_51 = ht(x)*7.5;
+y_77 = ht(x)*7.5;
+y_153 = ht(x)*7.5;
+y_178 = ht(x)*7.5;
+y_230 = ht(x)*7.5;
 
 figure(6)
-t = tiledlayout(2,3);
-nexttile
-plot(x+2.4,y_26,tv_data_26,v_data_26)
-nexttile
-plot(x+2,y_51,tv_data_51,v_data_51)
-nexttile
-plot(x+2,y_77,tv_data_77,v_data_77)
-nexttile
-plot(x+2.8,y_153,tv_data_153,v_data_153)
-nexttile
-plot(x+6,y_178,tv_data_178,v_data_178)
-nexttile
-plot(x+2.5,y_230,tv_data_230,v_data_230)
+plot(x+2,y,tv_data_51,v_data_51)
