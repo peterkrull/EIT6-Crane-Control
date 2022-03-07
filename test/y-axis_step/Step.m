@@ -167,8 +167,8 @@ step(h)
 %%
 %plot model with data
 syms s t
-b = 0.2
-i3 = 0.7e-3;
+b = 11
+i3 = 140e-3;
 m3 = m+(i3/r3);
 h = (ke*tg)/(r3*m3*(s+(b/m3)))
 r = ilaplace(h*(1/s))
