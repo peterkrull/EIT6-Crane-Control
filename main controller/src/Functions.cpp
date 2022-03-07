@@ -43,35 +43,23 @@ int endstop(int pwm, float min, float max, float pos){
     return pwmEndstop;
 }
 
-uint8_t currentToPwm(float current) {
+uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
 
-    //Serial.print("Curr in : "+String(current));
-
-    if (current > 10) current = 10;
-    if (current < -10) current = -10;
-
-    //Serial.print(" Curr lim : "+String(current));
-
+    // Linear current -> pwm conversion
     float pwm = 10.2*current+127.5;
 
-    //Serial.print(" PWM : "+String(pwm));
-
-    if (current < 0) {
-        pwm = pwm - 23.5;
+    // Add and compensate for deadzone (friction)
+    if (abs(current) < cust_dead){
+        pwm = 127.5;
+    } else if (current < 0) {
+        pwm = pwm - fric_dead;
     } else if (current > 0) {
-         pwm = pwm + 23.5;
+        pwm = pwm + fric_dead;
     }
 
-    //Serial.print(" PWM lin : "+String(pwm));
-
-    uint8_t returnPwm = (uint8_t)pwm;
-
-    //Serial.print(" ret PWM : "+String(returnPwm));
-
-    if ((uint8_t)pwm > 255*0.9) returnPwm = (uint8_t)255*0.9;
-    else if ((uint8_t)pwm < 255*0.1) returnPwm = (uint8_t)255*0.1;
-    
-    //Serial.println(" ret PWM fin : "+String(returnPwm));
-    
-    return returnPwm ;    
+    // Output limiter to 10% and 90%
+    if ((uint8_t)pwm > 255*0.9) return (uint8_t)255*0.9;
+    else if ((uint8_t)pwm < 255*0.1) return (uint8_t)255*0.1;
+    else return (uint8_t)pwm;
+  
 }
