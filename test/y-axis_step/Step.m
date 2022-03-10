@@ -165,16 +165,32 @@ figure(5)
 step(h)
 
 %%
+ke = 2.96e-2;
+r = 48e-3;
+m = 0.951;
+i3 = 140e-3+(r^2)*m;
+b = 20;
+c = (ke*24)/(i3*s+b);
+
+%plot(6)
+%step(c)
+
 %plot model with data
 syms s t
-b = 11
-i3 = 140e-3;
-m3 = m+(i3/r3);
-h = (ke*tg)/(r3*m3*(s+(b/m3)))
+% b = 11
+% i3 = 140e-3;
+% m3 = m+(i3/r3);
+ke = 2.96e-2;
+r = 48e-3;
+m = 0.951;
+i3 = 0.14+(r^2)*m;
+b = 7;
+h = (ke*(24))/(100*i3*s+b);
+
 r = ilaplace(h*(1/s))
-
+% 
 ht = matlabFunction(r)
-
+% 
 x = linspace(0,10,200);
 y_26 = ht(x)*9.9;
 y_51 = ht(x)*7.45;
@@ -187,13 +203,39 @@ figure(6)
 t = tiledlayout(2,3);
 nexttile
 plot(x+2.4,y_26,tv_data_26,v_data_26)
+xlabel('Time') 
+ylabel('Velocity')
+title('26')
 nexttile
 plot(x+2,y_51,tv_data_51,v_data_51)
+xlabel('Time') 
+ylabel('Velocity')
+title('51')
 nexttile
 plot(x+2,y_77,tv_data_77,v_data_77)
+xlabel('Time') 
+ylabel('Velocity')
+title('77')
 nexttile
 plot(x+2.8,y_153,tv_data_153,v_data_153)
+xlabel('Time') 
+ylabel('Velocity')
+title('153')
 nexttile
 plot(x+6,y_178,tv_data_178,v_data_178)
+xlabel('Time') 
+ylabel('Velocity')
+title('178')
 nexttile
 plot(x+2.5,y_230,tv_data_230,v_data_230)
+xlabel('Time') 
+ylabel('Velocity')
+title('230')
+
+x0=0;
+   y0=0;
+   plotwidth=600;
+   height=300;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+   
+exportgraphics(gcf,'normal1.pdf','ContentType','vector')

@@ -95,6 +95,13 @@ void setup() {
 
   // Printing starting on serial 0
   Serial.println("Starting...");
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
+  display.println(F("Crane Ready!"));
+  display.display();
 }
 
 // Reads all inputs to the system
@@ -126,8 +133,8 @@ void manuel() {
   digitalWrite(auto_manuel_led,HIGH);
 
   // Determines the pwm value from joystick position with software endstop (endstop(pwm, min, max, pos))
-  pwmX = endstop(joystickOutputFormat(joystickX), 0.5, 3.5, xPos);
-  pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.5, 1.22, yPos);
+  pwmX = endstop(joystickOutputFormat(joystickX), 0.0, 4, xPos);
+  pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
 
   // Sends pwm signals to motor driver x
   if (joystickDeadZone(joystickX) == 1) {
@@ -163,7 +170,7 @@ void manuel() {
 
 float ref = 2;
 
-PID xPid = PID(6,0,3);
+PID xPid = PID(3,0,0);
 low_pass oled_freq_lp = low_pass(0.2);
 
 // Automatic control
@@ -179,10 +186,10 @@ void automatic() {
 
   double conOut = xPid.update(ref-xContainer);
   // double conOut = 3*(ref-xContainer);
-  uint8_t pwm = currentToPwm(conOut);
+  uint8_t pwm = currentToPwm(conOut,23.5,0);
   pwmX = endstop(pwm,1,3,xPos);
   //Serial.println("PWM output: "+String(pwmX)+" ref: "+String(ref)+" conOut: "+String(conOut)+" PWM: "+String(pwm)+" Cable len: "+String(yPos));
-  Serial.println(String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
+  Serial.println(String(millis())+","+String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
 
   // Outputs the PWM signal
   digitalWrite(enable_x, HIGH);
@@ -236,5 +243,5 @@ void loop() {
   }
 
   // Update screen contents
-  //screen();
+  screen();
 }
