@@ -26,7 +26,7 @@ slow_interp_time = 0:0.01:18;
 
 % Guage
 guage_data_slow_time = guage_data_slow.Var1-14;
-guage_data_slow_force = movmean(guage_data_slow.Var2*9.82,50);
+guage_data_slow_force = movmean(guage_data_slow.Var2*9.82,1);
 
 slow_force_interp = interp1(guage_data_slow_time,guage_data_slow_force,slow_interp_time);
 
@@ -57,7 +57,7 @@ fast_interp_time = 0:0.01:9;
 
 % Guage
 guage_data_fast_time = guage_data_fast.Var1-3;
-guage_data_fast_force = movmean(guage_data_fast.Var2*9.82,50);
+guage_data_fast_force = movmean(guage_data_fast.Var2*9.82,1);
 
 fast_force_interp = interp1(guage_data_fast_time,guage_data_fast_force,fast_interp_time);
 
@@ -83,7 +83,39 @@ clf(gcf)
 hold on
 grid on
 
-plot(guage_data_fast.Var1,guage_data_fast.Var2)
-plot(guage_data_slow.Var1-10,guage_data_slow.Var2)
+FBs = 17
+Bs = 0
+
+slow_fric = ((slow_force_interp-FBs)./slow_vel_interp)-Bs;
+fast_fric = ((fast_force_interp-FBs)./fast_vel_interp)-Bs;
+
+plot(slow_interp_time, movmean(slow_fric,100))
+plot(fast_interp_time, movmean(fast_fric,100))
+
+
+xlim([4 16])
+
+ylim([0 150])
+
+%%
+
+clf(gcf)
+
+hold on
+grid on
+
+plot(guage_data_fast.Var1,guage_data_fast.Var2*9.82)
+plot(guage_data_slow.Var1-10,guage_data_slow.Var2*9.82)
 
 xlim([5 24])
+
+%%
+
+curr2pwm(10)
+
+
+function p = curr2pwm(current)
+    if current > 10; current = 10; end
+    if current < -10; current = -10; end
+    p = 10.2*current+127.5;
+end
