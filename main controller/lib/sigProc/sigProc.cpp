@@ -98,4 +98,5 @@ float forwarEuler::update(float input){
     output = (input - prev_input) / (micros() - prev_time);
     prev_time = micros();
     prev_input = input;
+    return output*1e6;
 }

@@ -1,6 +1,8 @@
 #include "path.h"
 #include "Functions.h"
 
+QauyToShip::QauyToShip(){}
+
 void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED){
     
     //Before start

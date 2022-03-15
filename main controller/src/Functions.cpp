@@ -45,6 +45,15 @@ int endstop(int pwm, float min, float max, float pos){
 
 uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
 
+
+    //Check for correct current value
+    if(current > 10){
+        current = 10;
+    }
+    if(current < -10){
+        current = -10;
+    }
+
     // Linear current -> pwm conversion
     float pwm = 10.2*current+127.5;
 

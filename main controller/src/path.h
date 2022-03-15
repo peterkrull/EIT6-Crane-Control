@@ -3,6 +3,7 @@
 
 class QauyToShip{
     public:
+        QauyToShip();
         void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED);
         void QauyToShip::reset();
 
