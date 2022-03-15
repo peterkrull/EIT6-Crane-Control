@@ -92,3 +92,10 @@ double PID::update(double error,uint32_t dtime){
     return outsig;
 }
 
+forwarEuler::forwarEuler(){}
+
+float forwarEuler::update(float input){
+    output = (input - prev_input) / (micros() - prev_time);
+    prev_time = micros();
+    prev_input = input;
+}
