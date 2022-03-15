@@ -63,3 +63,17 @@ uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
     else return (uint8_t)pwm;
   
 }
+
+int pwmLinY(float pwm) {
+    float tempPWM = pwm - 3.384;
+    
+    if(tempPWM<255*0.1){
+        tempPWM = 255*0.1;
+    }
+
+    if(tempPWM>255*0.9){
+        tempPWM = 255*0.9;
+    }
+
+    return(tempPWM);
+}
