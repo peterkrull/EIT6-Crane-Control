@@ -3,12 +3,12 @@
 
 QauyToShip::QauyToShip(){}
 
-void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED){
+void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, float *xRefpoint, float *yRefpoint, int electroMagnetLED){
     
     //Before start
     if(step==0) {    
         //If at start position
-        if(-0.05<xPos && xPos<0.05 && -0.05<yPos &&0.05<yPos){
+        if(-0.05<xPos && xPos<0.05 && -0.05<yPos && yPos<0.05){
             step=1;
         }
         else{
@@ -18,8 +18,9 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Move to above qauy
     if(step==1){
+        Serial.print("Woop...");
         *xRefpoint = 0.5;
-        if(0.49>xPos || xPos>0.51){
+        if(0.48>xPos || xPos>0.52){
            failTime = millis();
        } 
        else if(millis() > failTime+500){ //If head has been above container for 0.5s 
@@ -30,16 +31,16 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Lower head onto container
     if(step==2){
-        *yRefpoint = 1.20;
-        if(yPos > 1.195)        //Have hit container
+        *yRefpoint = 1.21;
+        if(yPos > 1.20)        //Have hit container
             step=3;
     }
 
     //Move to safety point
     if(step==3){
         *xRefpoint = 2.41;
-        *yRefpoint = 65;
-        if( yPos < 67){        //Hopefully crane will not be waiting for this
+        *yRefpoint = 0.60;
+        if( yPos < 0.67){        //Hopefully crane will not be waiting for this
             step=4;
         }
     }

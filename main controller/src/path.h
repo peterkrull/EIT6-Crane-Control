@@ -4,7 +4,7 @@
 class QauyToShip{
     public:
         QauyToShip();
-        void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED);
+        void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, float *xRefpoint, float *yRefpoint, int electroMagnetLED);
         void QauyToShip::reset();
 
     private:
@@ -16,7 +16,7 @@ class QauyToShip{
 
 class ShipToQauy{
     public:
-        void ShipToQauy::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED);
+        void ShipToQauy::update(float xPos, float yPos, float xContainer, float containerSpeed, float *xRefpoint, float *yRefpoint, int electroMagnetLED);
         void ShipToQauy::reset();
 
     private:
