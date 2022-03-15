@@ -46,20 +46,13 @@ int pwmX = 127;
 int pwmY = 127;
 
 // Time variables
-uint32_t prevTime = 0;
-uint16_t delta =0;
+uint32_t prevTime;
+uint16_t delta;
 uint32_t screenTimer;
-int sampleTime = 10000; //10 ms.    //Path algorithme speed test will fail if lower than 10 ms.
 
 // Container pos
 float xContainer = 0;
 float yContainer = 0;
-
-// Container speed
-float xContainerSpeed = 0;
-float yContainerSpeed = 0;
-float ContainerSpeed = 0;
-float xSpeed = 0;
 
 void setup() {
 
@@ -81,7 +74,7 @@ void setup() {
   pinMode(magnet_led,OUTPUT);
 
   // Initialize serial
-  Serial3.begin(9600);    //Communication with head
+  Serial3.begin(9600);
   Serial.begin(115200);
 
   // Initialize screen
@@ -111,44 +104,27 @@ void setup() {
   display.display();
 }
 
-//Read data for the angle sensor. Must run often.
-void inputAngleSensor(){
-    if (Serial3.available() > 0) {
-      String angleData;
-      angleData = Serial3.readStringUntil(*"\n");
-      angle = angleData.toFloat();
-  }
-}
-
 // Reads all inputs to the system
-low_pass xPosLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass xContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass yContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-forwarEuler xForwarEuler = forwarEuler();
-forwarEuler xContainerForwarEuler = forwarEuler();
-forwarEuler yContainerForwarEuler = forwarEuler();
-
 void input() {
   joystickX = analogRead(joystick_x);
   joystickY = analogRead(joystick_y);
   joystickSw = digitalRead(joystick_sw);
-  magnetSw = digitalRead(magnet_sw);            //Switch on outside of black box
-  autoManuelSw = digitalRead(auto_manuel_sw);   //Switch on outside of black box
+  magnetSw = digitalRead(magnet_sw);
+  autoManuelSw = digitalRead(auto_manuel_sw);
   xPos = 0.0048*analogRead(x_pos)-0.6765;
   yPos = 0.0015*analogRead(y_pos)-0.0025;
 
-  //Anlge sensor input
-  inputAngleSensor();
-  
+  // Reads angle data from head
+  if (Serial3.available() > 0) {
+    String angleData;
+    angleData = Serial3.readStringUntil(*"\n");
+    angle = angleData.toFloat();
+  }
+
   // Calculate container pos
   xContainer = xPos+(sin((-angle*PI)/180))*yPos;
   yContainer = yPos+(cos((-angle*PI)/180))*yPos;
 
-  //Calculate contrainer speed.
-  xSpeed = xForwarEuler.update(xPosLowpasss.update(xPos));
-  xContainerSpeed = xContainerForwarEuler.update(xContainerLowpasss.update(xContainer));
-  yContainerSpeed = yContainerForwarEuler.update(yContainerLowpasss.update(xContainer));
-  ContainerSpeed = sqrt(xContainerSpeed*xContainerSpeed + yContainerSpeed*yContainerSpeed);
 }
 
 //Manuel control
@@ -161,12 +137,12 @@ void manuel() {
   pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
 
   // Sends pwm signals to motor driver x
-  if (joystickDeadZone(joystickX) == 1) {   //If joystick is not in the middel
+  if (joystickDeadZone(joystickX) == 1) {
     analogWrite(pwm_x,pwmX);
     digitalWrite(enable_x, HIGH);
   }
   else {
-    analogWrite(pwm_x,127);                 //if joystick is in the middel
+    analogWrite(pwm_x,127);
     digitalWrite(enable_x, LOW);
   }
 
@@ -183,48 +159,38 @@ void manuel() {
   // Turns on LED and magnet when magnet switch is active
   if (magnetSw == 1)
   {
-    turnOnElectromagnet(true, magnet_led);
+    digitalWrite(magnet_led,HIGH);
+    Serial3.println("M1");
   }
   else{
-    turnOnElectromagnet(false, magnet_led);
+    digitalWrite(magnet_led,LOW);
+    Serial3.println("M0");
   }
 }
-
-float xRef = 2;        //This is just a comment to emphasise the importance of comments ;) \LL
-                      //Initial x pos refrence
-
-PID xPid = PID(3,0,0);
-low_pass oled_freq_lp = low_pass(0.2);
-
-// Automatic control
+float sData = 0;
 void automatic() {
-  // Turn off LED when automatic control is enabled
-  digitalWrite(auto_manuel_led, LOW);
+  if (Serial.available() > 0) {
+    sData = Serial.readStringUntil(*"\n").toFloat();
 
-  //Sets x position refrence from serial
-  if (Serial.available()>0){
-    xRef = Serial.readStringUntil(*"\n").toFloat();
-    //Make sure position is not too close to end.
-    if (xRef > 3) xRef = 3;
-    if (xRef < 1) xRef = 1;
+    if (sData<-10){
+      sData = -10;
+    }
+    if (sData>10){
+      sData = 10;
+    }
+    
   }
+  //Serial.println("sData: "+String(sData)+"PWM_value: "+String(pwmLinY(currentToPwm(sData, 20, 0))));
+  Serial.println(String(micros()) +","+ String(yPos));
 
-  double conOut = xPid.update(xRef-xContainer);
-  // double conOut = 3*(xRef-xContainer);
-  uint8_t pwm = currentToPwm(conOut,23.5,0);
-  pwmX = endstop(pwm,1,3,xPos);
-  //Serial.println("PWM output: "+String(pwmX)+" Xref: "+String(Xref)+" conOut: "+String(conOut)+" PWM: "+String(pwm)+" Cable len: "+String(yPos));
-  Serial.println(String(millis())+","+String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
-
-  // Outputs the PWM signal
-  digitalWrite(enable_x, HIGH);
-  analogWrite(pwm_x,pwmX);
+  digitalWrite(enable_y,HIGH);
+  analogWrite(pwm_y,pwmLinY(currentToPwm(sData, 20, 0)));
 }
 
-
+low_pass oled_freq_lp = low_pass(0.2);
 // Display system information on OLED
 void screen() {
-  if (1e6/(micros()-screenTimer) < 30){   //What is this \LL
+  if (1e6/(micros()-screenTimer) < 30){
     screenTimer = micros();
 
     display.clearDisplay();
@@ -251,26 +217,22 @@ void screen() {
 
 
 void loop() {
+
   // Calculate loop time
   uint32_t xmicros = micros();
   delta = xmicros - prevTime;
   prevTime = xmicros;
 
   // Reads inputs
-  inputAngleSensor();
+  input();
 
   // Determines manuel or automatic operation
   if(autoManuelSw == 1) {
-    input();
     manuel();
-    screen();
-  } 
-  //if auctomatic and sample time
-  else if(micros() > sampleTime + prevTime){
-    input();
-    prevTime = micros();  
+  } else {
     automatic();
   }
 
-  
+  // Update screen contents
+  //screen();
 }

@@ -39,13 +39,3 @@ class PID{
         double differential = 0;
         double integral = 0;
 };
-
-class forwarEuler{
-    public:
-        forwarEuler();
-        float update(float input);
-    private:
-        uint32_t prev_time=100000000;
-        float prev_input;
-        float output;
-};

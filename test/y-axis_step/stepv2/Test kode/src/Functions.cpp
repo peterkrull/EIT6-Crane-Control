@@ -64,17 +64,6 @@ uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
   
 }
 
-void turnOnElectromagnet(bool status, int LEDPin){
-    if (status == true) {
-    digitalWrite(LEDPin,HIGH);
-    Serial3.println("M1");
-  }
-
-  if(status==false){
-    digitalWrite(LEDPin,LOW);
-    Serial3.println("M0");
-  }
-}
 int pwmLinY(float pwm) {
     float tempPWM = pwm - 3.384;
     
