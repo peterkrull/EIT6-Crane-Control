@@ -74,7 +74,7 @@ void setup() {
   pinMode(magnet_led,OUTPUT);
 
   // Initialize serial
-  Serial3.begin(9600);
+  Serial3.begin(9600);    //Communication with head
   Serial.begin(115200);
 
   // Initialize screen
@@ -109,8 +109,8 @@ void input() {
   joystickX = analogRead(joystick_x);
   joystickY = analogRead(joystick_y);
   joystickSw = digitalRead(joystick_sw);
-  magnetSw = digitalRead(magnet_sw);
-  autoManuelSw = digitalRead(auto_manuel_sw);
+  magnetSw = digitalRead(magnet_sw);            //Switch on outside of black box
+  autoManuelSw = digitalRead(auto_manuel_sw);   //Switch on outside of black box
   xPos = 0.0048*analogRead(x_pos)-0.6765;
   yPos = 0.0015*analogRead(y_pos)-0.0025;
 
@@ -123,8 +123,7 @@ void input() {
 
   // Calculate container pos
   xContainer = xPos+(sin((-angle*PI)/180))*yPos;
-  yContainer = yPos+(cos((-angle*PI)/180))*yPos;
-
+  yContainer = yPos+(cos((-angle*PI)/180))*yPos;  //For no reason
 }
 
 //Manuel control
@@ -137,12 +136,12 @@ void manuel() {
   pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
 
   // Sends pwm signals to motor driver x
-  if (joystickDeadZone(joystickX) == 1) {
+  if (joystickDeadZone(joystickX) == 1) {   //If joystick is not in the middel
     analogWrite(pwm_x,pwmX);
     digitalWrite(enable_x, HIGH);
   }
   else {
-    analogWrite(pwm_x,127);
+    analogWrite(pwm_x,127);                 //if joystick is in the middel
     digitalWrite(enable_x, LOW);
   }
 
@@ -168,7 +167,8 @@ void manuel() {
   }
 }
 
-float ref = 2;
+float ref = 2;        //This is just a comment to emphasise the importance of comments ;) \LL
+                      //Initial x pos refrence
 
 PID xPid = PID(3,0,0);
 low_pass oled_freq_lp = low_pass(0.2);
@@ -178,8 +178,10 @@ void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
 
+  //Sets x position refrence from serial
   if (Serial.available()>0){
     ref = Serial.readStringUntil(*"\n").toFloat();
+    //Make sure position is not too close to end.
     if (ref > 3) ref = 3;
     if (ref < 1) ref = 1;
   }
