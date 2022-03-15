@@ -60,7 +60,7 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
         *yRefpoint = 1.17;  //3 cm above ship
 
         if(yPos > 1.15 && containerSpeed){
-            step==6;
+            step=6;
         }
 
     }
@@ -76,6 +76,6 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 }
 
 void QauyToShip::reset(){
-        int step=0;
-        uint16_t failTime =0;
+        step=0;
+        failTime =0;
 }
