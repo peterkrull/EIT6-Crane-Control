@@ -1,6 +1,7 @@
 #include "path.h"
+#include "Functions.h"
 
-void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int *electroMagnet){
+void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, int *xRefpoint, int*yRefpoint, int electroMagnetLED){
     
     //Before start
     if(step==0) {    
@@ -21,7 +22,7 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
        } 
        else if(millis() > failTime+500){ //If head has been above container for 0.5s 
            step = 2;
-           *electroMagnet = true;  //Turn on electrmagnet
+           turnOnElectromagnet(true,electroMagnetLED);
        }
     }
 
@@ -66,8 +67,13 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
     if(step==6){
         *yRefpoint = 1.21;
         if(yPos > 1.20){
-            *electroMagnet=false;
+            turnOnElectromagnet(false,electroMagnetLED);
         }
     }
 
+}
+
+void QauyToShip::reset(){
+        int step=0;
+        uint16_t failTime =0;
 }
