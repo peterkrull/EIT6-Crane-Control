@@ -55,6 +55,12 @@ int sampleTime = 10000; //10 ms.    //Path algorithme speed test will fail if lo
 float xContainer = 0;
 float yContainer = 0;
 
+// Container speed
+float xContainerSpeed = 0;
+float yContainerSpeed = 0;
+float ContainerSpeed = 0;
+float xSpeed = 0;
+
 void setup() {
 
   // Set input pinMode
@@ -115,6 +121,13 @@ void inputAngleSensor(){
 }
 
 // Reads all inputs to the system
+low_pass xPosLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
+low_pass xContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
+low_pass yContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
+forwarEuler xForwarEuler = forwarEuler();
+forwarEuler xContainerForwarEuler = forwarEuler();
+forwarEuler yContainerForwarEuler = forwarEuler();
+
 void input() {
   joystickX = analogRead(joystick_x);
   joystickY = analogRead(joystick_y);
@@ -124,11 +137,18 @@ void input() {
   xPos = 0.0048*analogRead(x_pos)-0.6765;
   yPos = 0.0015*analogRead(y_pos)-0.0025;
 
+  //Anlge sensor input
   inputAngleSensor();
   
   // Calculate container pos
   xContainer = xPos+(sin((-angle*PI)/180))*yPos;
-  yContainer = yPos+(cos((-angle*PI)/180))*yPos;  //For no reason
+  yContainer = yPos+(cos((-angle*PI)/180))*yPos;
+
+  //Calculate contrainer speed.
+  xSpeed = xForwarEuler.update(xPosLowpasss.update(xPos));
+  xContainerSpeed = xContainerForwarEuler.update(xContainerLowpasss.update(xContainer));
+  yContainerSpeed = yContainerForwarEuler.update(yContainerLowpasss.update(xContainer));
+  ContainerSpeed = sqrt(xContainerSpeed*xContainerSpeed + yContainerSpeed*yContainerSpeed);
 }
 
 //Manuel control
@@ -247,6 +267,7 @@ void loop() {
   } 
   //if auctomatic and sample time
   else if(micros() > sampleTime + prevTime){
+    input();
     prevTime = micros();  
     automatic();
   }
