@@ -1,3 +1,5 @@
+% OBS, dette er en Octave fil, udkommenter pkg load signal hvis det skal bruges i matlab
+
 pkg load signal
 
 clear all
