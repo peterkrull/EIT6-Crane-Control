@@ -1,3 +1,5 @@
+%% Load csv files, gauge and video
+
 guage_data_slow = readtable("x_friction_slow.csv");
 video_data_slow = readtable("x_friction_slow_video.csv");
 
@@ -17,11 +19,6 @@ video_data_fast = readtable("x_friction_fast_video.csv");
 
 %%
 
-clf(gcf)
-
-hold on
-grid on
-
 slow_interp_time = 0:0.01:18;
 
 % Guage
@@ -39,19 +36,17 @@ slow_vel_interp = interp1(video_slow_time,movmean(video_slow_vel,20),slow_interp
 
 % Calculate friction as b = f/vel
 slow_fric = slow_force_interp./slow_vel_interp;
-plot(slow_interp_time, movmean(slow_fric,10))
+
+% % PLOT
+% clf(gcf)
+% hold on
+% grid on
+% plot(slow_interp_time, movmean(slow_fric,10))
+% xlim([5 16])
 
 % plot(slow_interp_time,slow_force_interp,slow_interp_time,slow_vel_interp*100)
 
-xlim([5 16])
-
 %%
-
-
-clf(gcf)
-
-hold on
-grid on
 
 fast_interp_time = 0:0.01:9;
 
@@ -70,34 +65,91 @@ fast_vel_interp = interp1(video_fast_time,movmean(video_fast_vel,20),fast_interp
 
 % Calculate friction as b = f/vel
 fast_fric = fast_force_interp./fast_vel_interp;
-plot(fast_interp_time, movmean(fast_fric,10))
+
+% % PLOT
+% clf(gcf)
+% hold on
+% grid on
+% plot(fast_interp_time, movmean(fast_fric,10))
+% xlim([4 9])
 
 % plot(fast_interp_time,fast_force_interp,fast_interp_time,fast_vel_interp*100)
 
-xlim([4 9])
+%% Plot of non-compensated and compensated dampening
 
-%%
+FBs = 0
 
-clf(gcf)
+slow_fric = ((slow_force_interp-FBs)./slow_vel_interp);
+fast_fric = ((fast_force_interp-FBs)./fast_vel_interp);
 
+figure('position',[0,0,1000,400])
+tiledlayout(1,2)
+
+nexttile
+plot(slow_interp_time, movmean(slow_fric,200))
 hold on
 grid on
+plot(fast_interp_time, movmean(fast_fric,200))
+xlim([5 9])
+ylim([0 150])
+title("(a) Before constant compensation")
+xlabel("Time [s]")
+ylabel("Dampening constant [ks/s]")
+legend("High velocity test","Low velocity test")
 
 FBs = 17
-Bs = 0
 
-slow_fric = ((slow_force_interp-FBs)./slow_vel_interp)-Bs;
-fast_fric = ((fast_force_interp-FBs)./fast_vel_interp)-Bs;
+slow_fric = ((slow_force_interp-FBs)./slow_vel_interp);
+fast_fric = ((fast_force_interp-FBs)./fast_vel_interp);
+nexttile
 
-plot(slow_interp_time, movmean(slow_fric,100))
-plot(fast_interp_time, movmean(fast_fric,100))
+plot(slow_interp_time, movmean(slow_fric,200))
+hold on
+grid on
+plot(fast_interp_time, movmean(fast_fric,200))
+xlim([5 9])
+ylim([0 50])
+title("(b) After constant compensation")
+xlabel("Time [s]")
+ylabel("Dampening constant [ks/s]")
+legend("High velocity test","Low velocity test")
 
+% exportgraphics(gcf,"friction_coeffecient_x_axis.pdf","ContentType","vector")
 
-xlim([4 16])
+%% Calculate average dampening constant after compensation
 
-ylim([0 150])
+mvmnslow = movmean(slow_fric,200);
+mvmnfast = movmean(fast_fric,200);
 
-%%
+figure(2)
+plot(slow_interp_time(500:900), mvmnslow(500:900))
+hold on
+grid on
+plot(fast_interp_time(500:900), mvmnfast(500:900))
+
+avgval = (sum(mvmnslow(500:900))+sum(mvmnfast(500:900)))/(length(mvmnfast(500:900))*2)
+
+xlim([5 9])
+ylim([0 50])
+% close gcf
+
+%% Converting friction constant to constant current offset
+
+clc
+
+Fx = 17;
+rx = 75e-3;
+Kx = 0.609;
+Ix = (Fx*rx)/(Kx);
+disp("x-axis current offset - Ix : " + string(Ix))
+
+Fy = 30; % guess for now
+ry = 48e-3;
+Ky = 0.710;
+Iy = (Fy*ry)/(Ky);
+disp("y-axis current offset - Iy : " + string(Iy))
+
+%% Plot of force as a function of time
 
 clf(gcf)
 
@@ -109,10 +161,7 @@ plot(guage_data_slow.Var1-10,guage_data_slow.Var2*9.82)
 
 xlim([5 24])
 
-%%
-
-curr2pwm(10)
-
+%% Handy little function
 
 function p = curr2pwm(current)
     if current > 10; current = 10; end
