@@ -12,9 +12,9 @@ Down_3_container = readtable('3amp2sekCon.csv');
 Down_5_container = readtable('5amp2sekCon.csv');
 Down_7_container = readtable('5amp2sekCon.csv');
 
-Up_3_container = readtable('x.csv');
-Up_5_container = readtable('x.csv');
-Up_7_container = readtable('x.csv');
+Up_4_container = readtable('-4amp2sekCon.csv');
+Up_5_container = readtable('-5amp2sekCon.csv');
+Up_7_container = readtable('-7amp2sekCon.csv');
 
 %%
 %Calculate velocity
@@ -36,7 +36,7 @@ v_down_5_container = diff(movmean(Down_5_container.y,mn1))./diff(Down_5_containe
 v_down_7_container = diff(movmean(Down_7_container.y,mn1))./diff(Down_7_container.t);
 
 %Container up
-v_up_3_container = diff(movmean(Up_3_container.y,mn1))./diff(Up_3_container.t);
+v_up_4_container = diff(movmean(Up_4_container.y,mn1))./diff(Up_4_container.t);
 v_up_5_container = diff(movmean(Up_5_container.y,mn1))./diff(Up_5_container.t);
 v_up_7_container = diff(movmean(Up_7_container.y,mn1))./diff(Up_7_container.t);
 
@@ -53,14 +53,14 @@ tv_down_3_container = Down_3_container.t(1:length(Down_3_container.t)-1,1);
 tv_down_5_container = Down_5_container.t(1:length(Down_5_container.t)-1,1);
 tv_down_7_container = Down_7_container.t(1:length(Down_7_container.t)-1,1);
 
-tv_up_3_container = Up_3_container.t(1:length(Up_3_container.t)-1,1);
+tv_up_4_container = Up_4_container.t(1:length(Up_4_container.t)-1,1);
 tv_up_5_container = Up_5_container.t(1:length(Up_5_container.t)-1,1);
 tv_up_7_container = Up_7_container.t(1:length(Up_7_container.t)-1,1);
 
 %%
 %Plot raw data position
 figure(1)
-tiledlayout(3,4);
+tiledlayout(4,3);
 nexttile
 plot(Down_3.t, Down_3.y)
 xlabel('Time') 
@@ -76,22 +76,6 @@ plot(Down_7.t, Down_7.y)
 xlabel('Time') 
 ylabel('Position')
 title('Down 7')
-
-nexttile
-plot(Up_3.t, Up_3.y)
-xlabel('Time') 
-ylabel('Position')
-title('Up 4')
-nexttile
-plot(Up_3.t, Up_3.y)
-xlabel('Time') 
-ylabel('Position')
-title('Up 5')
-nexttile
-plot(Up_3.t, Up_3.y)
-xlabel('Time') 
-ylabel('Position')
-title('Up 7')
 
 nexttile
 plot(Down_3_container.t, Down_3_container.y)
@@ -110,10 +94,26 @@ ylabel('Position')
 title('Down container 7')
 
 nexttile
-plot(Up_3_container.t, Up_3_container.y)
+plot(Up_3.t, Up_3.y)
 xlabel('Time') 
 ylabel('Position')
-title('Up container 3')
+title('Up 3')
+nexttile
+plot(Up_3.t, Up_3.y)
+xlabel('Time') 
+ylabel('Position')
+title('Up 5')
+nexttile
+plot(Up_3.t, Up_3.y)
+xlabel('Time') 
+ylabel('Position')
+title('Up 7')
+
+nexttile
+plot(Up_4_container.t, Up_4_container.y)
+xlabel('Time') 
+ylabel('Position')
+title('Up container 4')
 nexttile
 plot(Up_5_container.t, Up_5_container.y)
 xlabel('Time') 
@@ -126,7 +126,7 @@ ylabel('Position')
 title('Up container 7')
 
 %%
-%Plot with model
+%Plot with model. Ikke rigtig model, linear peter/jakob model
 syms s t
 
 ke = 2.96e-2;
@@ -136,9 +136,9 @@ i3 = 0.14;
 b = 7;
 h = (ke*24)/(s*(i3/(r*2)+(m*r)/2)+(b)/(r*2));
 
-r = ilaplace(h*(1/s))
+r = ilaplace(h*(1/s));
  
-ht = matlabFunction(r)
+ht = matlabFunction(r);
 
 x = linspace(0,10,200);
 y_3 = ht(x)*3;
