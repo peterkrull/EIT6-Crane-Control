@@ -3,14 +3,14 @@ Down_3 = readtable('3amp2sek.csv');
 Down_5 = readtable('5amp2sek.csv');
 Down_7 = readtable('7amp2sek.csv');
 
-Up_3 = readtable('x.csv');
-Up_5 = readtable('x.csv');
-Up_7 = readtable('x.csv');
+Up_3 = readtable('-3amp2sek.csv');
+Up_5 = readtable('-5amp2sek.csv');
+Up_7 = readtable('-7amp2sek.csv');
 
 %Load measurements with container
-Down_3_container = readtable('x.csv');
-Down_5_container = readtable('x.csv');
-Down_7_container = readtable('x.csv');
+Down_3_container = readtable('3amp2sekCon.csv');
+Down_5_container = readtable('5amp2sekCon.csv');
+Down_7_container = readtable('5amp2sekCon.csv');
 
 Up_3_container = readtable('x.csv');
 Up_5_container = readtable('x.csv');
@@ -124,3 +124,26 @@ plot(Up_7_container.t, Up_7_container.y)
 xlabel('Time') 
 ylabel('Position')
 title('Up container 7')
+
+%%
+%Plot with model
+syms s t
+
+ke = 2.96e-2;
+r = 48e-3;
+m = 0.951;
+i3 = 0.14;
+b = 7;
+h = (ke*24)/(s*(i3/(r*2)+(m*r)/2)+(b)/(r*2));
+
+r = ilaplace(h*(1/s))
+ 
+ht = matlabFunction(r)
+
+x = linspace(0,10,200);
+y_3 = ht(x)*3;
+y_5 = ht(x)*5;
+y_7 = ht(x)*7;
+y_3_neg = ht(x)*-3;
+y_5_neg = ht(x)*-5;
+y_7_neg = ht(x)*-7;
