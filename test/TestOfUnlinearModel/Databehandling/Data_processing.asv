@@ -40,22 +40,7 @@ v_up_3_container = diff(movmean(,mn1))./diff();
 v_up_5_container = diff(movmean(,mn1))./diff();
 v_up_7_container = diff(movmean(,mn1))./diff();
 
-%Makes time vector for velodity
-tv_down_3 = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_down_5 = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_down_7 = neg1.Var1(1:length(neg1.Var1)-1,1);
 
-tv_up_3 = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_up_3 = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_up_3 = neg1.Var1(1:length(neg1.Var1)-1,1);
-
-tv_down_3_container = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_down_5_container = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_down_7_container = neg1.Var1(1:length(neg1.Var1)-1,1);
-
-tv_up_3_container = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_up_5_container = neg1.Var1(1:length(neg1.Var1)-1,1);
-tv_up_7_container = neg1.Var1(1:length(neg1.Var1)-1,1);
 
 %%
 %Plot raw data position
