@@ -30,3 +30,6 @@ grid on
 
 figure(2)
 specgram(ifft(A1),length(ifft(A1))-1)
+
+figure(3)
+specgram(ifft(A2),length(ifft(A2))-1)
