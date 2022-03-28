@@ -128,3 +128,17 @@ grid on
 %    set(gcf,'position',[x0,y0,plotwidth,height])
 %    
 % exportgraphics(gcf,'normal1.pdf','ContentType','vector')
+%%
+s=tf('s');
+
+l = 1;
+B = 14;
+m = ((0.2)/((0.075)^2))+0.951+0.792+2.943;
+b = 2.943/m;
+g = 9.82;
+
+G = (s)/(s^3*(1-b*l)+s^2*((B*l)/(m))+s*g+((B*g)/(m)))
+figure(1)
+margin(G)
+figure(2)
+step(G)
