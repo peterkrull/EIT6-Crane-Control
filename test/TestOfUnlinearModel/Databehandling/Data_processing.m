@@ -10,7 +10,7 @@ Up_7 = readtable('-7amp2sek.csv');
 %Load measurements with container
 Down_3_container = readtable('3amp2sekCon.csv');
 Down_5_container = readtable('5amp2sekCon.csv');
-Down_7_container = readtable('5amp2sekCon.csv');
+Down_7_container = readtable('5amp2sekCon.csv'); %Husk at den her ikke passer!
 
 Up_4_container = readtable('-4amp2sekCon.csv');
 Up_5_container = readtable('-5amp2sekCon.csv');
@@ -124,6 +124,74 @@ plot(Up_7_container.t, Up_7_container.y)
 xlabel('Time') 
 ylabel('Position')
 title('Up container 7')
+%%
+%Plot raw data velocity
+figure(2)
+tiledlayout(4,3);
+nexttile
+plot(tv_down_3, v_down_3)
+xlabel('Time') 
+ylabel('Velocity')
+title('Down 3')
+nexttile
+plot(tv_down_5, v_down_5)
+xlabel('Time') 
+ylabel('Velocity')
+title('Down 5')
+nexttile
+plot(tv_down_7, v_down_7)
+xlabel('Time') 
+ylabel('Velocity')
+title('Down 7')
+
+nexttile
+plot(tv_down_3_container, v_down_3_container)
+xlabel('Time') 
+ylabel('Velocity')
+title('Down container 3')
+nexttile
+plot(tv_down_5_container, v_down_5_container)
+xlabel('Time') 
+ylabel('Velocity')
+title('Down container 5')
+nexttile
+plot(tv_down_7_container, v_down_7_container)
+xlabel('Time') 
+ylabel('Position')
+title('Down container 7')
+
+nexttile
+plot(tv_up_3, v_up_3)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up 3')
+nexttile
+plot(tv_up_3, v_up_3)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up 5')
+nexttile
+plot(tv_up_3, v_up_3)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up 7')
+
+nexttile
+plot(tv_up_4_container, v_up_4_container)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up container 4')
+nexttile
+plot(tv_up_5_container, v_up_5_container)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up container 5')
+nexttile
+plot(tv_up_7_container, v_up_7_container)
+xlabel('Time') 
+ylabel('Velocity')
+title('Up container 7')
+
 
 %%
 %Plot with model. Ikke rigtig model, linear peter/jakob model
