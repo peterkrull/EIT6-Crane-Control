@@ -36,6 +36,10 @@ if(1)
     I_xStart=1;
     I_xEnd=3;
     I_xCurrent=3;
+
+    I_LStart=1;
+    I_LEnd=3;
+    I_LCurrent=0;
     out=sim("CraneModel.slx");
 
     subplot(2,5,1)
