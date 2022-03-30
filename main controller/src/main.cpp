@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h>
 #include "sigProc.h"
+#include "path.h"
 
 // Definitions for screen
 #define SCREEN_WIDTH 128
@@ -46,6 +47,7 @@ int pwmX = 127;
 int pwmY = 127;
 
 // Time variables
+uint32_t prevTime1 = 0;
 uint32_t prevTime = 0;
 uint16_t delta =0;
 uint32_t screenTimer;
@@ -135,7 +137,7 @@ void input() {
   magnetSw = digitalRead(magnet_sw);            //Switch on outside of black box
   autoManuelSw = digitalRead(auto_manuel_sw);   //Switch on outside of black box
   xPos = 0.0048*analogRead(x_pos)-0.6765;
-  yPos = 0.0015*analogRead(y_pos)-0.0025;
+  yPos = (0.0015*analogRead(y_pos)-0.0025)-0.07;
 
   //Anlge sensor input
   inputAngleSensor();
@@ -190,35 +192,41 @@ void manuel() {
   }
 }
 
-float xRef = 2;        //This is just a comment to emphasise the importance of comments ;) \LL
-                      //Initial x pos refrence
 
-PID xPid = PID(3,0,0);
+
+PID xPid = PID(5,0,1,0.05);
+PID yPid = PID(100,0,40,0.05);
+
+QauyToShip testQuayToShip = QauyToShip();
+
 low_pass oled_freq_lp = low_pass(0.2);
+
+float xRef = 0;
+float yRef = 0;
 
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
 
-  //Sets x position refrence from serial
-  if (Serial.available()>0){
-    xRef = Serial.readStringUntil(*"\n").toFloat();
-    //Make sure position is not too close to end.
-    if (xRef > 3) xRef = 3;
-    if (xRef < 1) xRef = 1;
-  }
+  testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
+  double XconOut = xPid.update(xRef-xContainer);
+  double YconOut = yPid.update(yRef-yPos);
 
-  double conOut = xPid.update(xRef-xContainer);
-  // double conOut = 3*(xRef-xContainer);
-  uint8_t pwm = currentToPwm(conOut,23.5,0);
-  pwmX = endstop(pwm,1,3,xPos);
+  uint8_t pwmx = currentToPwm(XconOut,23.5,0);
+  uint8_t pwmy = pwmLinY(currentToPwm(YconOut, 20, 0));
+  pwmX = endstop(pwmx,0.2,3.8,xPos);
+  pwmY = endstop(pwmy,0.1,1.25,yPos);
+  //Serial.println("Y-pos: "+String(yPos)+" current: "+String(YconOut)+" pwmY: "+String(pwmY));
   //Serial.println("PWM output: "+String(pwmX)+" Xref: "+String(Xref)+" conOut: "+String(conOut)+" PWM: "+String(pwm)+" Cable len: "+String(yPos));
-  Serial.println(String(millis())+","+String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
+  //Serial.println(String(millis())+","+String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
 
   // Outputs the PWM signal
   digitalWrite(enable_x, HIGH);
   analogWrite(pwm_x,pwmX);
+
+  digitalWrite(enable_y,HIGH);
+  analogWrite(pwm_y,pwmY);
 }
 
 
@@ -260,15 +268,16 @@ void loop() {
   inputAngleSensor();
 
   // Determines manuel or automatic operation
-  if(autoManuelSw == 1) {
+  if(digitalRead(auto_manuel_sw) == 1) {
+    screen();
     input();
     manuel();
-    screen();
   } 
   //if auctomatic and sample time
-  else if(micros() > sampleTime + prevTime){
+  else if(micros() > sampleTime + prevTime1){
+    Serial.println("xRef: "+String(xRef)+" yRef: "+String(yRef));
     input();
-    prevTime = micros();  
+    prevTime1 = micros();  
     automatic();
   }
 
