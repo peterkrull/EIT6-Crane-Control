@@ -28,7 +28,7 @@ B_l = 9.4;
 B_x = 10;
 sFrictionX=20;
 cFrictionX=15;
-sFrictionL=20.4;
+sFrictionL=50;
 cFrictionL=17.4;
 
 if(1)
