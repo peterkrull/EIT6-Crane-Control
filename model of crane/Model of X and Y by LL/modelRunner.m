@@ -42,6 +42,8 @@ if(1)
     I_LCurrent=0;
     out=sim("CraneModel.slx");
 
+    figure(1)
+
     subplot(2,5,1)
     plot(out.tout,out.XContainer,Con3A.t+1,Con3A.x-0.02)
     legend('Simulation','Measurement','Location','southeast')
@@ -56,6 +58,7 @@ if(1)
     xlabel('time [s]')
     ylabel('x-position Trolley [m]')
     grid on
+
 end
 
 if(1)
@@ -64,6 +67,8 @@ if(1)
     I_xEnd=3;
     I_xCurrent=5;
     out=sim("CraneModel.slx");
+
+    figure(1)
 
     subplot(2,5,2)
     plot(out.tout,out.XContainer,Con5A.t+1,Con5A.x-0.3)
@@ -88,6 +93,8 @@ if(1)
     I_xCurrent=7;
     out=sim("CraneModel.slx");
 
+    figure(1)
+
     subplot(2,5,3)
     plot(out.tout,out.XContainer,Con7A.t+1,Con7A.x)
     legend('Simulation','Measurement','Location','southeast')
@@ -110,6 +117,8 @@ if(1)
     I_xEnd=2;
     I_xCurrent=9;
     out=sim("CraneModel.slx");
+
+    figure(1)
 
     subplot(2,5,4)
     plot(out.tout,out.XContainer,Con9A.t+1,Con9A.x)
@@ -136,6 +145,8 @@ if(1)
     I_xEnd=3;
     I_xCurrent=5;
     out=sim("CraneModel.slx");
+
+    figure(1)
 
     subplot(2,5,5)
     plot(out.tout,out.XContainer,Con5AWC.t+1,Con5AWC.x)
