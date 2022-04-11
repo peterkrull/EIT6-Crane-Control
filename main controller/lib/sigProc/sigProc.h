@@ -4,7 +4,7 @@ class low_pass{
     public:
         low_pass(float tau);
         double update(double input);
-        double update(double input,uint32_t dtime);
+        double update(double input,float dtime);
         void restart(double value);
     private:
         float xTau;
@@ -26,7 +26,7 @@ class lead_lag{
 
 class PID{
     public:
-        PID(double Kp = 0 , double Ki = 0 , double Kd = 0 , float tau = 0);
+        PID(double Kp = 0 , double Ki = 0 , double Kd = 0 , float tau = 0, bool ideal = false);
         double update(double error);
         double update(double error,uint32_t dtime);
         void restart();
