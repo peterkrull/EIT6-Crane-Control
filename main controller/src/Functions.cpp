@@ -43,8 +43,39 @@ int endstop(int pwm, float min, float max, float pos){
     return pwmEndstop;
 }
 
-uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
+uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, bool axis) {
+    //Serial.print("current: "+String(current)+" Speedy: "+String(ySpeed)+" Speedx: "+String(xSpeed)+" Magnet: "+String(magnetSw));
 
+    // Make more linear for y-axis (axis = 0)
+    if(axis == 0){
+        // Adjust for gravity
+        if (magnetSw == 1){
+            current = current - 1.35; // Current gravity with container
+        } else{
+            current = current - 0.33; // Current gravity without container
+        }
+        
+        // Adjust for friction
+        if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
+            current = 0;
+        } else if (ySpeed < 0) {
+            current = current - 3.17; // Columb friction current
+        } else if (ySpeed > 0) {
+            current = current + 3.17; // Columb friction current
+        }
+    }
+
+    // Make more linear for x-axis (axis = 1)
+    if(axis == 1){
+        // Adjust for friction
+        if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
+            current = 0;
+        } else if (xSpeed < 0) {
+            current = current - 2.21; // Columb friction current
+        } else if (xSpeed > 0) {
+            current = current + 2.21; // Columb friction current
+        }
+    }
 
     //Check for correct current value
     if(current > 10){
@@ -53,23 +84,11 @@ uint8_t currentToPwm(float current,float fric_dead, float cust_dead) {
     if(current < -10){
         current = -10;
     }
-
+    
     // Linear current -> pwm conversion
     float pwm = 10.2*current+127.5;
-
-    // Add and compensate for deadzone (friction)
-    if (abs(current) < cust_dead){
-        pwm = 127.5;
-    } else if (current < 0) {
-        pwm = pwm - fric_dead;
-    } else if (current > 0) {
-        pwm = pwm + fric_dead;
-    }
-
-    // Output limiter to 10% and 90%
-    if ((uint8_t)pwm > 255*0.9) return (uint8_t)255*0.9;
-    else if ((uint8_t)pwm < 255*0.1) return (uint8_t)255*0.1;
-    else return (uint8_t)pwm;
+    //Serial.println(" pwm: "+String(pwm));
+    return (uint8_t)pwm;
   
 }
 
@@ -83,17 +102,4 @@ void turnOnElectromagnet(bool status, int LEDPin){
     digitalWrite(LEDPin,LOW);
     Serial3.println("M0");
   }
-}
-int pwmLinY(float pwm) {
-    float tempPWM = pwm - 3.384;
-    
-    if(tempPWM<255*0.1){
-        tempPWM = 255*0.1;
-    }
-
-    if(tempPWM>255*0.9){
-        tempPWM = 255*0.9;
-    }
-
-    return(tempPWM);
 }

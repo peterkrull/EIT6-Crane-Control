@@ -7,6 +7,7 @@
 #include <Adafruit_I2CDevice.h>
 #include "sigProc.h"
 #include "path.h"
+#include "math.h"
 
 // Definitions for screen
 #define SCREEN_WIDTH 128
@@ -23,6 +24,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define auto_manuel_sw 3
 #define x_pos A0
 #define y_pos A1
+#define x_driver_AO1 A5
+#define x_driver_AO2 A4
+#define y_driver_AO1 A3
+#define y_driver_AO2 A2
 #define magnet_led 50
 #define auto_manuel_led 52
 
@@ -41,6 +46,10 @@ bool autoManuelSw = 0;
 float xPos = 0; 
 float yPos = 0;
 float angle = 0;
+int yDriverAO1 = 0;
+int yDriverAO2 = 0;
+int xDriverAO1 = 0;
+int xDriverAO2 = 0;
 
 // Global output variables
 int pwmX = 127;
@@ -57,11 +66,12 @@ int sampleTime = 10000; //10 ms.    //Path algorithme speed test will fail if lo
 float xContainer = 0;
 float yContainer = 0;
 
-// Container speed
+// Speeds
 float xContainerSpeed = 0;
 float yContainerSpeed = 0;
 float ContainerSpeed = 0;
 float xSpeed = 0;
+float ySpeed = 0;
 
 void setup() {
 
@@ -123,10 +133,12 @@ void inputAngleSensor(){
 }
 
 // Reads all inputs to the system
-low_pass xPosLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass xContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass yContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
+low_pass xPosLowpasss = low_pass(0.03); //Lowpass filter tau = 30  ms.
+low_pass yPosLowpasss = low_pass(0.03); //Lowpass filter tau = 30  ms.
+low_pass xContainerLowpasss = low_pass(0.03); //Lowpass filter tau = 30  ms.
+low_pass yContainerLowpasss = low_pass(0.03); //Lowpass filter tau = 30  ms.
 forwarEuler xForwarEuler = forwarEuler();
+forwarEuler yForwarEuler = forwarEuler();
 forwarEuler xContainerForwarEuler = forwarEuler();
 forwarEuler yContainerForwarEuler = forwarEuler();
 
@@ -138,6 +150,12 @@ void input() {
   autoManuelSw = digitalRead(auto_manuel_sw);   //Switch on outside of black box
   xPos = 0.0048*analogRead(x_pos)-0.6765;
   yPos = (0.0015*analogRead(y_pos)-0.0025)-0.07;
+  xDriverAO1 = analogRead(x_driver_AO1);
+  xDriverAO2 = analogRead(x_driver_AO2);
+  yDriverAO1 = analogRead(y_driver_AO1);
+  yDriverAO2 = analogRead(y_driver_AO2);
+
+  //Serial.println("XAO1: "+String(xDriverAO1)+" XAO2: "+String(xDriverAO2)+" YAO1: "+String(yDriverAO1)+" YAO2: "+String(yDriverAO2));
 
   //Anlge sensor input
   inputAngleSensor();
@@ -146,11 +164,15 @@ void input() {
   xContainer = xPos+(sin((-angle*PI)/180))*yPos;
   yContainer = yPos+(cos((-angle*PI)/180))*yPos;
 
-  //Calculate contrainer speed.
+  //Calculate speed x-axis and y-axis
   xSpeed = xForwarEuler.update(xPosLowpasss.update(xPos));
+  ySpeed = yForwarEuler.update(yPosLowpasss.update(yPos));
+  
+  //Calculate contrainer speed.
   xContainerSpeed = xContainerForwarEuler.update(xContainerLowpasss.update(xContainer));
   yContainerSpeed = yContainerForwarEuler.update(yContainerLowpasss.update(xContainer));
   ContainerSpeed = sqrt(xContainerSpeed*xContainerSpeed + yContainerSpeed*yContainerSpeed);
+
 }
 
 //Manuel control
@@ -161,7 +183,7 @@ void manuel() {
   // Determines the pwm value from joystick position with software endstop (endstop(pwm, min, max, pos))
   pwmX = endstop(joystickOutputFormat(joystickX), 0.0, 4, xPos);
   pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
-
+  
   // Sends pwm signals to motor driver x
   if (joystickDeadZone(joystickX) == 1) {   //If joystick is not in the middel
     analogWrite(pwm_x,pwmX);
@@ -193,37 +215,45 @@ void manuel() {
 }
 
 
+// Define PID values for controllers
+PID xPidInner = PID(0.20,0,0.1,0.03);
+PID xPidOuter = PID(50,0,5,0.03);
+PID yPid = PID(150,0,65,0.05);
 
-PID xPid = PID(5,0,1,0.05);
-PID yPid = PID(100,0,40,0.05);
-
-QauyToShip testQuayToShip = QauyToShip();
+//QauyToShip testQuayToShip = QauyToShip();
 
 low_pass oled_freq_lp = low_pass(0.2);
 
-float xRef = 0;
-float yRef = 0;
+// Refference signals
+float xRef = 2;
+float yRef = 0.4;
 
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
 
-  testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
-  double XconOut = xPid.update(xRef-xContainer);
+  //testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
+
+  // X-controller
+  //double XconOutOuter = xPidOuter.update(xRef-xContainer);
+  //double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
+  //double XconOut = xPidInner.update(OuterControllerOutput+angle);
+
+  // Y-controller
   double YconOut = yPid.update(yRef-yPos);
 
-  uint8_t pwmx = currentToPwm(XconOut,23.5,0);
-  uint8_t pwmy = pwmLinY(currentToPwm(YconOut, 20, 0));
-  pwmX = endstop(pwmx,0.2,3.8,xPos);
-  pwmY = endstop(pwmy,0.1,1.25,yPos);
-  //Serial.println("Y-pos: "+String(yPos)+" current: "+String(YconOut)+" pwmY: "+String(pwmY));
-  //Serial.println("PWM output: "+String(pwmX)+" Xref: "+String(Xref)+" conOut: "+String(conOut)+" PWM: "+String(pwm)+" Cable len: "+String(yPos));
-  //Serial.println(String(millis())+","+String(conOut)+","+String(xPos)+","+String(xContainer)+","+String(-angle)+","+String(1e6/float(oled_freq_lp.update(delta))));
+  // Make current to pwm conversion. This also removes friction in the system
+  //uint8_t pwmx = currentToPwm(XconOut, magnetSw, xSpeed, ySpeed, 1);
+  uint8_t pwmy = currentToPwm(YconOut, magnetSw, xSpeed, ySpeed, 0);
+  
+  //Definere software endstops
+  //pwmX = endstop(pwmx,0.2,3.8,xPos);
+  pwmY = endstop(pwmy,0.2,1,yPos);
 
   // Outputs the PWM signal
-  digitalWrite(enable_x, HIGH);
-  analogWrite(pwm_x,pwmX);
+  //digitalWrite(enable_x, HIGH);
+  //analogWrite(pwm_x,pwmX);
 
   digitalWrite(enable_y,HIGH);
   analogWrite(pwm_y,pwmY);
@@ -275,7 +305,7 @@ void loop() {
   } 
   //if auctomatic and sample time
   else if(micros() > sampleTime + prevTime1){
-    Serial.println("xRef: "+String(xRef)+" yRef: "+String(yRef));
+    //Serial.println("xRef: "+String(xRef)+" yRef: "+String(yRef));
     input();
     prevTime1 = micros();  
     automatic();

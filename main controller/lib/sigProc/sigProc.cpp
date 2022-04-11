@@ -1,18 +1,21 @@
 #include "sigProc.h"
 
+/*
+First-order low-pass filter with time constant tau. Time unit is seconds.
+*/
 low_pass::low_pass(float tau){
     xTau = tau;
 }
 
 double low_pass::update(double input){
     uint32_t xtime = micros();
-    double outsig = update(input,xtime-prev_time);
+    double outsig = update(input,(xtime-prev_time)/1e6);
     prev_time = xtime;
     return outsig;
 }
 
-double low_pass::update(double input,uint32_t dtime){
-    float a = dtime/(dtime+(xTau*1000000));
+double low_pass::update(double input,float dtime){
+    float a = dtime/(dtime+xTau);
     output_val = output_val*(1-a)+input*a;
     return output_val;
 }
@@ -47,10 +50,20 @@ void lead_lag::restart(double value){
     prev_error = 0;
 }
 
-PID::PID(double Kp, double Ki, double Kd, float tau){
-    xKp = Kp;
-    xKi = Ki;
-    xKd = Kd;
+/*
+Basic PID-controller with low-pass support for D-controller.
+
+*/
+PID::PID(double Kp, double Ki, double Kd, float tau, bool ideal){
+    if (ideal){
+        xKp = Kp;
+        xKi = Ki*Kp;
+        xKd = Kd*Kp;  
+    } else {
+        xKp = Kp;
+        xKi = Ki;
+        xKd = Kd;     
+    }
     if (tau > 0){
         lp = low_pass(tau);
         dlp = true;
@@ -74,16 +87,16 @@ double PID::update(double error,uint32_t dtime){
         outsig += xKp*error;
     }
 
-    if (xKd && dlp){ // differential with lp
-        differential = (xKd*1000000*(lp.update(error-prev_error)))/dtime;
+    if (xKd && dlp){ // derivative with lp
+        differential = (xKd*1e6*(lp.update(error-prev_error)))/dtime;
         outsig += differential;
-    } else if (xKd) { // differential
-        differential = (xKd*1000000*(error-prev_error))/dtime;
+    } else if (xKd) { // derivative
+        differential = (xKd*1e6*(error-prev_error))/dtime;
         outsig += differential;
     }
     
     if (xKi){ // integral
-        integral += (xKi*error*dtime/1000000);
+        integral += (xKi*error*dtime/1e6);      
         outsig += integral;
     }
 
