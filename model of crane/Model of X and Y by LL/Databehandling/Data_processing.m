@@ -17,28 +17,6 @@ Up_5_container = readtable('-5amp2sekCon.csv');
 Up_7_container = readtable('-7amp2sekCon.csv');
 
 %%
-%Calculate wire length
-
-%Without container
-s_down_3 = Down_3.y-Down_3.y(1);
-s_down_5 = Down_5.y-Down_5.y(1);
-s_down_7 = Down_7.y-Down_7.y(1);
-
-s_up_3 = Up_3.y-Up_3.y(1);
-s_up_5 = Up_5.y-Up_5.y(1);
-s_up_7 = Up_7.y-Up_7.y(1);
-
-%With container
-s_down_3_container = Down_3_container.y-Down_3_container.y(1);
-s_down_5_container = Down_5_container.y-Down_5_container.y(1);
-s_down_7_container = Down_7_container.y-Down_7_container.y(1);
-
-s_up_4_container = Up_4_container.y-Up_4_container.y(1);
-s_up_5_container = Up_5_container.y-Up_5_container.y(1);
-s_up_7_container = Up_7_container.y-Up_7_container.y(1);
-
-
-%%
 %Calculate velocity
 mn1 = 1;
 
@@ -216,69 +194,24 @@ title('Up container 7')
 
 
 %%
-%Plot wire length
-figure(3)
-tiledlayout(4,3);
-nexttile
-plot(Down_3.t, s_down_3)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down 3')
-nexttile
-plot(Down_5.t, s_down_5)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down 5')
-nexttile
-plot(Down_7.t, s_down_7)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down 7')
+%Plot with model. Ikke rigtig model, linear peter/jakob model
+syms s t
 
-nexttile
-plot(Down_3_container.t, s_down_3_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down container 3')
-nexttile
-plot(Down_5_container.t, s_down_5_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down container 5')
-nexttile
-plot(Down_7_container.t, s_down_7_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Down container 7')
+ke = 2.96e-2;
+r = 48e-3;
+m = 0.951;
+i3 = 0.14;
+b = 7;
+h = (ke*24)/(s*(i3/(r*2)+(m*r)/2)+(b)/(r*2));
 
-nexttile
-plot(Up_3.t, s_up_3)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up 3')
-nexttile
-plot(Up_5.t, s_up_5)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up 5')
-nexttile
-plot(Up_7.t, s_up_7)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up 7')
+r = ilaplace(h*(1/s));
+ 
+ht = matlabFunction(r);
 
-nexttile
-plot(Up_4_container.t, s_up_4_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up container 4')
-nexttile
-plot(Up_5_container.t, s_up_5_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up container 5')
-nexttile
-plot(Up_7_container.t, s_up_7_container)
-xlabel('Time') 
-ylabel('Wire length')
-title('Up container 7')
+x = linspace(0,10,200);
+y_3 = ht(x)*3;
+y_5 = ht(x)*5;
+y_7 = ht(x)*7;
+y_3_neg = ht(x)*-3;
+y_5_neg = ht(x)*-5;
+y_7_neg = ht(x)*-7;

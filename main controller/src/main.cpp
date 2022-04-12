@@ -24,6 +24,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define auto_manuel_sw 3
 #define x_pos A0
 #define y_pos A1
+#define x_driver_AO1 A5
+#define x_driver_AO2 A4
+#define y_driver_AO1 A3
+#define y_driver_AO2 A2
 #define magnet_led 50
 #define auto_manuel_led 52
 
@@ -42,6 +46,10 @@ bool autoManuelSw = 0;
 float xPos = 0; 
 float yPos = 0;
 float angle = 0;
+int yDriverAO1 = 0;
+int yDriverAO2 = 0;
+int xDriverAO1 = 0;
+int xDriverAO2 = 0;
 
 // Global output variables
 int pwmX = 127;
@@ -142,6 +150,12 @@ void input() {
   autoManuelSw = digitalRead(auto_manuel_sw);   //Switch on outside of black box
   xPos = 0.0048*analogRead(x_pos)-0.6765;
   yPos = (0.0015*analogRead(y_pos)-0.0025)-0.07;
+  xDriverAO1 = analogRead(x_driver_AO1);
+  xDriverAO2 = analogRead(x_driver_AO2);
+  yDriverAO1 = analogRead(y_driver_AO1);
+  yDriverAO2 = analogRead(y_driver_AO2);
+
+  //Serial.println("XAO1: "+String(xDriverAO1)+" XAO2: "+String(xDriverAO2)+" YAO1: "+String(yDriverAO1)+" YAO2: "+String(yDriverAO2));
 
   //Anlge sensor input
   inputAngleSensor();
@@ -169,7 +183,7 @@ void manuel() {
   // Determines the pwm value from joystick position with software endstop (endstop(pwm, min, max, pos))
   pwmX = endstop(joystickOutputFormat(joystickX), 0.0, 4, xPos);
   pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
-
+  
   // Sends pwm signals to motor driver x
   if (joystickDeadZone(joystickX) == 1) {   //If joystick is not in the middel
     analogWrite(pwm_x,pwmX);
@@ -204,7 +218,7 @@ void manuel() {
 // Define PID values for controllers
 PID xPidInner = PID(0.20,0,0.1,0.03);
 PID xPidOuter = PID(50,0,5,0.03);
-PID yPid = PID(150,0,45,0.05);
+PID yPid = PID(150,0,65,0.05);
 
 //QauyToShip testQuayToShip = QauyToShip();
 
@@ -222,24 +236,24 @@ void automatic() {
   //testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
 
   // X-controller
-  double XconOutOuter = xPidOuter.update(xRef-xContainer);
-  double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
-  double XconOut = xPidInner.update(OuterControllerOutput+angle);
+  //double XconOutOuter = xPidOuter.update(xRef-xContainer);
+  //double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
+  //double XconOut = xPidInner.update(OuterControllerOutput+angle);
 
   // Y-controller
   double YconOut = yPid.update(yRef-yPos);
 
   // Make current to pwm conversion. This also removes friction in the system
-  uint8_t pwmx = currentToPwm(XconOut, magnetSw, xSpeed, ySpeed, 1);
+  //uint8_t pwmx = currentToPwm(XconOut, magnetSw, xSpeed, ySpeed, 1);
   uint8_t pwmy = currentToPwm(YconOut, magnetSw, xSpeed, ySpeed, 0);
   
   //Definere software endstops
-  pwmX = endstop(pwmx,0.2,3.8,xPos);
+  //pwmX = endstop(pwmx,0.2,3.8,xPos);
   pwmY = endstop(pwmy,0.2,1,yPos);
 
   // Outputs the PWM signal
-  digitalWrite(enable_x, HIGH);
-  analogWrite(pwm_x,pwmX);
+  //digitalWrite(enable_x, HIGH);
+  //analogWrite(pwm_x,pwmX);
 
   digitalWrite(enable_y,HIGH);
   analogWrite(pwm_y,pwmY);

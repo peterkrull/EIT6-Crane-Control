@@ -260,8 +260,8 @@ void screen() {
 void OpenLoopTest(){
   if(millis()>testTimer+5000){
   testTimer = millis();
-  while(millis() <testTimer+2000 && digitalRead(auto_manuel_sw) == 0){
-  uint8_t pwmx = currentToPwm(5,0,0);
+  while(millis() <testTimer+1000 && digitalRead(auto_manuel_sw) == 0){
+  uint8_t pwmx = currentToPwm(7,0,0);
   uint8_t pwmy = (currentToPwm(0, 0, 0));
   pwmX = endstop(pwmx,0.5,3.5,xPos);
   pwmY = endstop(pwmy,0.2,1.15,yPos);
