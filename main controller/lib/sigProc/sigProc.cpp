@@ -113,3 +113,40 @@ float forwarEuler::update(float input){
     prev_input = input;
     return output*1e6;
 }
+
+enableFix::enableFix(){}
+
+bool enableFix::update(float actualCurrent, int demantedCurrent, float difference, uint32_t timeMillis){
+    enable = 1;
+    // Converte pwm value to current 
+    currentDemanted = ((5*demantedCurrent)/51)-(25/2);
+
+    // Converte analog current to actual current and check for correct values
+    if(actualCurrent>819.2){
+        actualCurrent = 819.2;
+    }
+
+    currentAcutual = ((actualCurrent*0.0048828125)-2)*5;
+
+
+    // Calculate current difference
+    diffCurrent = currentDemanted - currentAcutual;
+
+    // if difference is too big disable xx time
+    if (abs(diffCurrent)>8){
+        prev_time = prev_time+1;
+
+        if (prev_time<=15){
+            enable = 0;
+        }
+        if (prev_time>=30){
+            enable = 1;
+            prev_time = 0;
+
+        }
+    }
+
+    Serial.println(String(currentAcutual)+","+String(currentDemanted)+","+String(enable)+","+String(millis()));
+
+    return enable;
+}

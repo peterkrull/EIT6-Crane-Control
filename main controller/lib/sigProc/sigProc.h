@@ -49,3 +49,15 @@ class forwarEuler{
         float prev_input;
         float output;
 };
+
+class enableFix{
+    public:
+        enableFix();
+        bool update(float actualCurrent, int demantedCurrent, float difference, uint32_t timeMillis);
+    private:
+        float currentAcutual = 0;
+        float currentDemanted = 0;
+        float diffCurrent = 0;
+        bool enable = 0;
+        uint32_t prev_time=100000000;
+};

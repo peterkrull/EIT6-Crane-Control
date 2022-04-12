@@ -63,6 +63,22 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
         } else if (ySpeed > 0) {
             current = current + 3.17; // Columb friction current
         }
+
+        // Set max speed
+        if(abs(ySpeed)>0.5){
+           current = 0; 
+        }
+
+        // Equalize currents around gravity
+        if(current > 10-1.45 && magnetSw ==1){
+            current = 10-1.45;
+        }
+        if(current > 10-0.33 && magnetSw ==0){
+            current = 10-0.33;
+        }
+        if(current < -10){
+            current = -10;
+        }
     }
 
     // Make more linear for x-axis (axis = 1)
