@@ -50,6 +50,7 @@ class forwarEuler{
         float output;
 };
 
+// Not in use
 class enableFix{
     public:
         enableFix();

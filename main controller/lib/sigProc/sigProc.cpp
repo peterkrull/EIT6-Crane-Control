@@ -114,6 +114,7 @@ float forwarEuler::update(float input){
     return output*1e6;
 }
 
+// EnableFix function not in use
 enableFix::enableFix(){}
 
 bool enableFix::update(float actualCurrent, int demantedCurrent, float difference, uint32_t timeMillis){
@@ -145,8 +146,5 @@ bool enableFix::update(float actualCurrent, int demantedCurrent, float differenc
 
         }
     }
-
-    Serial.println(String(currentAcutual)+","+String(currentDemanted)+","+String(enable)+","+String(millis()));
-
     return enable;
 }

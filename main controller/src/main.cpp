@@ -224,9 +224,9 @@ PID yPid = PID(170,0,80,0.05);
 
 low_pass oled_freq_lp = low_pass(0.2);
 
-// Refference signals
+// Refference signals (Can be used if refference system is inactive)
 float xRef = 2;
-float yRef = 0.10;
+float yRef = 0.70;
 
 // Automatic control
 void automatic() {

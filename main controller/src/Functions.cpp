@@ -44,7 +44,6 @@ int endstop(int pwm, float min, float max, float pos){
 }
 
 uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, bool axis) {
-    //Serial.print("current: "+String(current)+" Speedy: "+String(ySpeed)+" Speedx: "+String(xSpeed)+" Magnet: "+String(magnetSw));
 
     // Make more linear for y-axis (axis = 0)
     if(axis == 0){
@@ -103,9 +102,7 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
     
     // Linear current -> pwm conversion
     float pwm = 10.2*current+127.5;
-    //Serial.println(" pwm: "+String(pwm));
     return (uint8_t)pwm;
-  
 }
 
 void turnOnElectromagnet(bool status, int LEDPin){
