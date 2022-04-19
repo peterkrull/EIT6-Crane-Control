@@ -138,6 +138,8 @@ double IIR::update(double input){
         - y[1]*a[1]
         - y[2]*a[2] ;
 
+    output = output/a[0];
+
     y[0] = output;
 
     return output;
