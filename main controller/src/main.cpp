@@ -152,7 +152,7 @@ low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass yPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass xContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass yContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
-low_pass angleLowpass = low_pass(1/30);
+low_pass angleLowpass = low_pass(1/30); // Lowpass angle to remove obscene values
 forwarEuler xForwarEuler = forwarEuler(); // Make object xForwarEuler used for calculating speed in the y-axis
 forwarEuler yForwarEuler = forwarEuler(); // Make object yForwarEuler used for calculating speed in the x-axis
 forwarEuler xContainerForwarEuler = forwarEuler(); // Make object xContainerForwarEuler used for calculating speed in the container x-axis
@@ -237,6 +237,17 @@ void manuel() {
 
 lead_lag xController = lead_lag(1/XleadZeroCoef, 1/XleadPoleCoef, XleadZeroCoef/XleadPoleCoef);
 PID angleController = PID(XP, XI, XD, 0, false);
+float angleNotchWc = 3.14;
+float angleNotchBW = .5;
+float notchCoef0 = 4/(sampleTime*1e-6*sampleTime*1e-6)+angleNotchBW*angleNotchBW;
+float notchCoef1 = 2*angleNotchBW*angleNotchBW-8/(sampleTime*1e-6*sampleTime*1e-6);
+float notchCoef2 = notchCoef0 + 2/(sampleTime*1e-6)*angleNotchWc;
+float angleNotchNumerator[3]  = {notchCoef0, notchCoef1, notchCoef0};
+float angleNotchEnumerator[3] = {notchCoef0, notchCoef1, notchCoef2};
+IIR angleNotchFilter = IIR(angleNotchNumerator, angleNotchEnumerator);
+
+
+
 PID yPid = PID(170,0,80,0.05);
 
 //QauyToShip testQuayToShip = QauyToShip();
@@ -262,6 +273,8 @@ void automatic() {
   
 
   double angleConOutput = thetaGain*angleController.update(-angle*PI/180);
+  angleConOutput = angleNotchFilter.update(angleConOutput);
+
   double xConOutput = xGain*xController.update(xRef-xPos, 0.01);
   double XconOut = xConOutput-angleConOutput;
 
