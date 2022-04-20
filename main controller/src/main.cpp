@@ -73,6 +73,17 @@ float ContainerSpeed = 0; // Speed of container
 float xSpeed = 0; // Speed of x-axis
 float ySpeed = 0; // Speed of y-axis
 
+
+//Xcontroller variables
+float XleadZeroCoef = 2.41;
+float XleadPoleCoef = 0.35;
+float XP = .10;
+float XD = 1;
+float XI = 0;
+float thetaGain = 9;
+float xGain = 1.5;
+
+
 // Run on startup
 void setup() {
 
@@ -122,6 +133,9 @@ void setup() {
   display.setCursor(0,0);
   display.println(F("Crane Ready!"));
   display.display();
+
+  Serial.println("//XleadZeroCoefficient: " + String(XleadZeroCoef) + ", XleadPoleCoefficient: " + String(XleadPoleCoef) + ", XleadGain" + String(xGain));
+  Serial.println("//PX: " + String(XP)+ ", IX: " + String(XI) + ", DX: " + String(XD) +", angleGain" + String(thetaGain));
 }
 
 // Read data for the angle sensor. Must run often.
@@ -138,6 +152,7 @@ low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass yPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass xContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
 low_pass yContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
+low_pass angleLowpass = low_pass(1/30); // Lowpass angle to remove obscene values
 forwarEuler xForwarEuler = forwarEuler(); // Make object xForwarEuler used for calculating speed in the y-axis
 forwarEuler yForwarEuler = forwarEuler(); // Make object yForwarEuler used for calculating speed in the x-axis
 forwarEuler xContainerForwarEuler = forwarEuler(); // Make object xContainerForwarEuler used for calculating speed in the container x-axis
@@ -159,7 +174,8 @@ void input() {
 
   //Anlge sensor input
   inputAngleSensor(); // Reads the angle of the head
-  
+  angle = angleLowpass.update(angle); // lowpass angle of the head
+
   // Calculate container pos
   xContainer = xPos+(sin((-angle*PI)/180))*yPos; // Calculate x-container position
   yContainer = yPos+(cos((-angle*PI)/180))*yPos; // Calculate y-container position
@@ -167,12 +183,12 @@ void input() {
   // Calculate speed x-axis and y-axis
   xSpeed = xForwarEuler.update(xPosLowpasss.update(xPos)); // Calculate speed in x-axis
   ySpeed = yForwarEuler.update(yPosLowpasss.update(yPos)); // Calculate speed in y-axis
-  
+
   // Calculate contrainer speed
   xContainerSpeed = xContainerForwarEuler.update(xContainerLowpasss.update(xContainer)); // Calculate speed of container x-axis
   yContainerSpeed = yContainerForwarEuler.update(yContainerLowpasss.update(xContainer)); // Calculate speed of container y-axis
   ContainerSpeed = sqrt(xContainerSpeed*xContainerSpeed + yContainerSpeed*yContainerSpeed); // Calculate speed of container
-
+  
 }
 
 //Manuel control
@@ -216,8 +232,22 @@ void manuel() {
 
 
 // Define PID values for controllers
-PID xPidInner = PID(0.20,0,0.1,0.03);
-PID xPidOuter = PID(50,0,5,0.03);
+//PID xPidInner = PID(0.20,0,0.1,0.03);
+//PID xPidOuter = PID(50,0,5,0.03);
+
+lead_lag xController = lead_lag(1/XleadZeroCoef, 1/XleadPoleCoef, XleadZeroCoef/XleadPoleCoef);
+PID angleController = PID(XP, XI, XD, 0, false);
+float angleNotchWc = 3.14;
+float angleNotchBW = .5;
+float notchCoef0 = 4/(sampleTime*1e-6*sampleTime*1e-6)+angleNotchBW*angleNotchBW;
+float notchCoef1 = 2*angleNotchBW*angleNotchBW-8/(sampleTime*1e-6*sampleTime*1e-6);
+float notchCoef2 = notchCoef0 + 2/(sampleTime*1e-6)*angleNotchWc;
+float angleNotchNumerator[3]  = {notchCoef0, notchCoef1, notchCoef0};
+float angleNotchEnumerator[3] = {notchCoef0, notchCoef1, notchCoef2};
+IIR angleNotchFilter = IIR(angleNotchNumerator, angleNotchEnumerator);
+
+
+
 PID yPid = PID(170,0,80,0.05);
 
 //QauyToShip testQuayToShip = QauyToShip();
@@ -226,25 +256,34 @@ low_pass oled_freq_lp = low_pass(0.2);
 
 // Refference signals (Can be used if refference system is inactive)
 float xRef = 2;
-float yRef = 0.70;
+float yRef = 1;
 
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
+  bool enableXmotor = true;
   digitalWrite(auto_manuel_led, LOW);
 
   //testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
 
   // X-controller
-  double XconOutOuter = xPidOuter.update(xRef-xContainer);
-  double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
-  double XconOut = xPidInner.update(OuterControllerOutput+angle);
+  //double XconOutOuter = xPidOuter.update(xRef-xContainer);
+  //double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
+  //double XconOut = xPidInner.update(OuterControllerOutput+angle);
+  
+
+  double angleConOutput = thetaGain*angleController.update(-angle*PI/180);
+  angleConOutput = angleNotchFilter.update(angleConOutput);
+
+  double xConOutput = xGain*xController.update(xRef-xPos, 0.01);
+  double XconOut = xConOutput-angleConOutput;
+
 
   // Y-controller
   double YconOut = yPid.update(yRef-yPos);
 
   // Make current to pwm conversion. This also removes friction in the system
-  uint8_t pwmx = currentToPwm(XconOut, magnetSw, xSpeed, ySpeed, 1);
+  uint8_t pwmx = currentToPwmX(XconOut, xSpeed, &enableXmotor);
   uint8_t pwmy = currentToPwm(YconOut, magnetSw, xSpeed, ySpeed, 0);
   
 
@@ -253,11 +292,12 @@ void automatic() {
   pwmY = endstop(pwmy,0,1.22,yPos);
 
   // Outputs the PWM signal
-  digitalWrite(enable_x, HIGH);
+  digitalWrite(enable_x, enableXmotor);
   analogWrite(pwm_x,pwmX);
 
   digitalWrite(enable_y,HIGH);
   analogWrite(pwm_y,pwmY);
+  Serial.println(String(millis())+ "," + String(xPos) + "," + String(xRef) + "," + String(angle) + "," + String(XconOut));
 }
 
 
@@ -300,8 +340,8 @@ void loop() {
 
   // if auctomatic and sample time
   else if(micros() > sampleTime + prevTime1){
+    prevTime1 = micros();
     input(); // Read inputs
-    prevTime1 = micros();  
     automatic(); // Automatic control
   }
 }

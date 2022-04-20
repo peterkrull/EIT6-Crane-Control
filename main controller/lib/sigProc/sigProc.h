@@ -40,6 +40,19 @@ class PID{
         double integral = 0;
 };
 
+class IIR{
+    public:
+        IIR(float a_in[3], float b_in[3]);
+        double update(double input);
+        double update(double input,uint32_t dtime);
+        void restart();
+    private:
+        double a[3], b[3];
+        double x[3], y[3];
+        uint32_t prev_time;
+        double prev_error = 0;
+};
+
 class forwarEuler{
     public:
         forwarEuler();

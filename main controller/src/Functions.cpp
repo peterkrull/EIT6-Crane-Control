@@ -105,6 +105,30 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
     return (uint8_t)pwm;
 }
 
+uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
+        if (abs(current) < .2){ //This number can be set to something larger than 0 if no movement is wanted for small currents
+            current = 0;
+            *enableXMotor = false;
+        } else if (xSpeed < 0) {
+            current = current - 2.21; // Columb friction current
+            *enableXMotor = true;
+        } else if (xSpeed > 0) {
+            current = current + 2.21; // Columb friction current
+            *enableXMotor = true;
+        }
+
+        if(current > 10){
+            current = 10;
+        }
+        if(current < -10){
+            current = -10;
+        }
+    
+        // Linear current -> pwm conversion
+        float pwm = 10.2*current+127.5;
+        return (uint8_t)pwm;
+}
+
 void turnOnElectromagnet(bool status, int LEDPin){
     if (status == true) {
     digitalWrite(LEDPin,HIGH);
