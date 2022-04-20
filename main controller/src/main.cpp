@@ -248,7 +248,7 @@ IIR angleNotchFilter = IIR(angleNotchNumerator, angleNotchEnumerator);
 
 
 
-PID yPid = PID(170,0,80,0.05);
+PID yPid = PID(150,0,75,0.05);
 
 //QauyToShip testQuayToShip = QauyToShip();
 
