@@ -248,8 +248,9 @@ float angleNotchBW = .5;
 float notchCoef0 = 4/(sampleTime*1e-6*sampleTime*1e-6)+angleNotchBW*angleNotchBW;
 float notchCoef1 = 2*angleNotchBW*angleNotchBW-8/(sampleTime*1e-6*sampleTime*1e-6);
 float notchCoef2 = notchCoef0 + 2/(sampleTime*1e-6)*angleNotchWc;
+float notchCoef3 = notchCoef0 - 2/(sampleTime*1e-6)*angleNotchWc;
 float angleNotchNumerator[3]  = {notchCoef0, notchCoef1, notchCoef0};
-float angleNotchEnumerator[3] = {notchCoef0, notchCoef1, notchCoef2};
+float angleNotchEnumerator[3] = {notchCoef2, notchCoef1, notchCoef3};
 IIR angleNotchFilter = IIR(angleNotchNumerator, angleNotchEnumerator);
 
 
