@@ -46,6 +46,7 @@ bool autoManuelSw = 0; // State of manuel or automatic control
 float xPos = 0; // Position of x-axis
 float yPos = 0; // Position of y-axis
 float angle = 0; // Angle of head
+float prevAngle = 0;
 int yDriverAO1 = 0; // Value of y motor driver A01
 int yDriverAO2 = 0; // Value of y motor driver A02
 int xDriverAO1 = 0; // Value of x motor driver A01
@@ -144,6 +145,11 @@ void inputAngleSensor(){
       String angleData;
       angleData = Serial3.readStringUntil(*"\n");
       angle = angleData.toFloat();
+
+      if(angle > 35 || angle < -35){
+        angle = prevAngle;
+      }
+      prevAngle = angle;
   }
 }
 
