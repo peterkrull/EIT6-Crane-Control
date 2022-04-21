@@ -25,12 +25,16 @@ G_theta = s/(s^3*a + s^2*B_x*l_P+s*g*M_1+g*B_x)*b;
 %%
 figure(1)
 rlocus(G_theta)
+export_fig("thetaPlantRLocus.pdf")
+
 %%
 
 D_theta = (s + .16);
 
 figure(235)
-rlocus(G_theta*D_theta)
+GthetaDtheta1 = G_theta*D_theta;
+rlocus(GthetaDtheta1)
+export_fig("thetaFeedbackRLocus1.pdf")
 gain_theta = 18;
 D_theta = D_theta*gain_theta;
 
@@ -42,6 +46,20 @@ figure(2)
 rlocus(minreal(CL_thetaDT))
 figure(3)
 rlocus(minreal(CL_thetaFB))
+export_fig("thetaFeedbackRLocus2.pdf")
+%%
+figure(235325)
+[value,t] = step(-CL_thetaFB,10);
+plot(t,value)
+run("x non linear model/variables.m");
+simulation = sim("angleControllerValidation.slx");
+hold on
+plot(simulation.tout, simulation.Theta1)
+hold off
+xlabel("Time [s]")
+ylabel("Angle [rad]")
+legend("Linear model", "Non linear model")
+export_fig("thetaFeedbackStepLinear.pdf")
 %%
 
 G_x = (l_P*s^2+ g)/s^2;
@@ -84,3 +102,14 @@ D_x = s+.1;
 
 figure
 margin(minreal(CL_thetaFB*G_x*D_x))
+
+function export_fig(name)
+    x0=0;
+    y0=0;
+    plotwidth=650;
+    plotHeight=400;
+    set(gcf,'position',[x0,y0,plotwidth,plotHeight])
+    
+    
+    exportgraphics(gcf,name,'ContentType','vector')
+end
