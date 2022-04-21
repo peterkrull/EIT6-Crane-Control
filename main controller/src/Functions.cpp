@@ -43,57 +43,44 @@ int endstop(int pwm, float min, float max, float pos){
     return pwmEndstop;
 }
 
-uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, bool axis) {
+uint8_t currentToPwmY(double current, bool magnetSw, float ySpeed) {
 
     // Make more linear for y-axis (axis = 0)
-    if(axis == 0){
-        float coulombFriction = 0;
-        // Adjust for gravity
-        if (magnetSw == 1){
-            current = current - 1.35; // Current gravity with container
-            coulombFriction = 3.0;
-        } else{
-            current = current - 0.33; // Current gravity without container
-            coulombFriction = 2.4;
-        }
-        
-        // Adjust for friction
-        if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
-            current = 0;
-        } else if (ySpeed < 0) {
-            current = current - coulombFriction; // Columb friction current
-        } else if (ySpeed > 0) {
-            current = current + coulombFriction; // Columb friction current
-        }
-
-        // Set max speed
-        if(abs(ySpeed)>0.5){
-           current = 0; 
-        }
-
-        // Equalize currents around gravity
-        if(current > 10-1.35 && magnetSw ==1){
-            current = 10-1.35;
-        }
-        if(current > 10-0.33 && magnetSw ==0){
-            current = 10-0.33;
-        }
-        if(current < -10){
-            current = -10;
-        }
+    float coulombFriction = 0;
+    // Adjust for gravity
+    if (magnetSw == 1){
+        current = current - 1.35; // Current gravity with container
+        coulombFriction = 3.0;
+    } else{
+        current = current - 0.33; // Current gravity without container
+        coulombFriction = 2.4;
+    }
+    
+    // Adjust for friction
+    if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
+        current = 0;
+    } else if (ySpeed < 0) {
+        current = current - coulombFriction; // Columb friction current
+    } else if (ySpeed > 0) {
+        current = current + coulombFriction; // Columb friction current
     }
 
-    // Make more linear for x-axis (axis = 1)
-    if(axis == 1){
-        // Adjust for friction
-        if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
-            current = 0;
-        } else if (xSpeed < 0) {
-            current = current - 2.4; // Columb friction current
-        } else if (xSpeed > 0) {
-            current = current + 2.4; // Columb friction current
-        }
+    // Set max speed
+    if(abs(ySpeed)>0.5){
+        current = 0; 
     }
+
+    // Equalize currents around gravity
+    if(current > 10-1.35 && magnetSw ==1){
+        current = 10-1.35;
+    }
+    if(current > 10-0.33 && magnetSw ==0){
+        current = 10-0.33;
+    }
+    if(current < -10){
+        current = -10;
+    }
+    
 
     //Check for correct current value
     if(current > 10){
@@ -113,10 +100,10 @@ uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
             current = 0;
             *enableXMotor = false;
         } else if (xSpeed < 0) {
-            current = current - 2.21; // Columb friction current
+            current = current - 2.24; // Columb friction current
             *enableXMotor = true;
         } else if (xSpeed > 0) {
-            current = current + 2.21; // Columb friction current
+            current = current + 2.24; // Columb friction current
             *enableXMotor = true;
         }
 

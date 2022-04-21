@@ -284,7 +284,7 @@ void automatic() {
 
   // Make current to pwm conversion. This also removes friction in the system
   uint8_t pwmx = currentToPwmX(XconOut, xSpeed, &enableXmotor);
-  uint8_t pwmy = currentToPwm(YconOut, magnetSw, xSpeed, ySpeed, 0);
+  uint8_t pwmy = currentToPwmY(YconOut, magnetSw, ySpeed);
   
 
   // Definere software endstops
