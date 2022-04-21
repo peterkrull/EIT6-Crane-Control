@@ -47,20 +47,23 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
 
     // Make more linear for y-axis (axis = 0)
     if(axis == 0){
+        float coulombFriction = 0;
         // Adjust for gravity
         if (magnetSw == 1){
             current = current - 1.35; // Current gravity with container
+            coulombFriction = 3.0;
         } else{
             current = current - 0.33; // Current gravity without container
+            coulombFriction = 2.4;
         }
         
         // Adjust for friction
         if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
             current = 0;
         } else if (ySpeed < 0) {
-            current = current - 3.17; // Columb friction current
+            current = current - coulombFriction; // Columb friction current
         } else if (ySpeed > 0) {
-            current = current + 3.17; // Columb friction current
+            current = current + coulombFriction; // Columb friction current
         }
 
         // Set max speed
@@ -69,8 +72,8 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
         }
 
         // Equalize currents around gravity
-        if(current > 10-1.45 && magnetSw ==1){
-            current = 10-1.45;
+        if(current > 10-1.35 && magnetSw ==1){
+            current = 10-1.35;
         }
         if(current > 10-0.33 && magnetSw ==0){
             current = 10-0.33;
@@ -86,9 +89,9 @@ uint8_t currentToPwm(double current, bool magnetSw, float xSpeed, float ySpeed, 
         if (abs(current) < 0){ //This number can be set to something larger than 0 if no movement is wanted for small currents
             current = 0;
         } else if (xSpeed < 0) {
-            current = current - 2.21; // Columb friction current
+            current = current - 2.4; // Columb friction current
         } else if (xSpeed > 0) {
-            current = current + 2.21; // Columb friction current
+            current = current + 2.4; // Columb friction current
         }
     }
 
