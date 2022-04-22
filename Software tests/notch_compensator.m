@@ -1,15 +1,28 @@
 s = tf('s');
 
-w = 2.33*2*pi;
-z = 0.01;
+ts = 0.01; % Sample time
 
-D_theta_notch = (s^2+s*2*z*w+w^2)/(s+w)^2;
+wc = fc*2*pi % Frequency to filter
+wc_warp = 2/ts*tan(wc*ts/2) % Pre-warped frequency
 
-D_lp = (1/(s+1))
+z = 0.1; % Dampening factor
 
-Dz = c2d(D_theta_notch,0.01,'zoh')
+% Notch filter from lecture
+D_notch = (s^2+s*2*z*wc_warp+wc_warp^2)/(s+wc_warp)^2;
+D_notch_raw = (s^2+s*2*z*wc+wc^2)/(s+wc)^2;
+Dz = c2d(D_notch,ts,'tustin')
 
-Dz.Numerator
-Dz.Denominator
+wx = 5*2*pi; % Bandwidth
 
-impulse(Dz,1)
+% Notch filter from : https://en.wikipedia.org/wiki/Band-stop_filter
+D_notch_spike = (s^2+wc_warp^2)/(s^2+wx*s+wc_warp^2);
+D_notch_spike_raw = (s^2+wc^2)/(s^2+wx*s+wc^2);
+Dz_spike = c2d(D_notch_spike,ts,'tustin')
+
+% Plots
+margin(Dz)
+hold on
+margin(Dz_spike)
+margin(D_notch_raw)
+margin(D_notch_spike_raw)
+grid on

@@ -21,6 +21,8 @@ class IIR:
         for i in range(1,len(self.a)):
             self.out -= self.a[i]*self.y[i]
 
+        self.out = self.out/a[0]
+
         self.y[0] = self.out
 
         return float(self.out)
@@ -35,8 +37,7 @@ if __name__ == "__main__":
 
     notch = IIR(a,b)
 
-    impulse = [1]
-    impulse += [0 for _ in range(99)]
+    impulse = [1]+[0 for _ in range(99)]
 
     step = [1 for _ in range(100)]
 
