@@ -46,7 +46,8 @@ bool autoManuelSw = 0; // State of manuel or automatic control
 float xPos = 0; // Position of x-axis
 float yPos = 0; // Position of y-axis
 float angle = 0; // Angle of head
-float prevAngle = 0;
+float angleFiltered = 0; // Filtered angle of head
+float prevAngle = 0; // Previous angle inside +- 35 degrees  
 int yDriverAO1 = 0; // Value of y motor driver A01
 int yDriverAO2 = 0; // Value of y motor driver A02
 int xDriverAO1 = 0; // Value of x motor driver A01
@@ -236,25 +237,16 @@ void manuel() {
   }
 }
 
-
-// Define PID values for controllers
-//PID xPidInner = PID(0.20,0,0.1,0.03);
-//PID xPidOuter = PID(50,0,5,0.03);
-
+// Controllers on the x-axis
 lead_lag xController = lead_lag(1/XleadZeroCoef, 1/XleadPoleCoef, XleadZeroCoef/XleadPoleCoef);
 PID angleController = PID(XP, XI, XD, 0, false);
-float angleNotchWc = 3.14;
-float angleNotchBW = .5;
-float notchCoef0 = 4/(sampleTime*1e-6*sampleTime*1e-6)+angleNotchBW*angleNotchBW;
-float notchCoef1 = 2*angleNotchBW*angleNotchBW-8/(sampleTime*1e-6*sampleTime*1e-6);
-float notchCoef2 = notchCoef0 + 2/(sampleTime*1e-6)*angleNotchWc;
-float notchCoef3 = notchCoef0 - 2/(sampleTime*1e-6)*angleNotchWc;
-float angleNotchNumerator[3]  = {notchCoef0, notchCoef1, notchCoef0};
-float angleNotchEnumerator[3] = {notchCoef2, notchCoef1, notchCoef3};
-IIR angleNotchFilter = IIR(angleNotchNumerator, angleNotchEnumerator);
 
+// Notch filter that removes unwanted angle frequencies
+float b[3]  = {1.0, -1.9553, 0.9738};
+float a[3] = {1.0, -1.7276, 0.7462};
+IIR angleNotchFilter = IIR(a, b);
 
-
+// PID controller for y-axis
 PID yPid = PID(150,0,75,0.05);
 
 //QauyToShip testQuayToShip = QauyToShip();
@@ -268,20 +260,19 @@ float yRef = 1;
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
-  bool enableXmotor = true;
   digitalWrite(auto_manuel_led, LOW);
+
+  //Define enable value for x-axis motor
+  bool enableXmotor = true;
 
   //testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
 
-  // X-controller
-  //double XconOutOuter = xPidOuter.update(xRef-xContainer);
-  //double OuterControllerOutput = (atan2(XconOutOuter,9.82)*(180/PI));
-  //double XconOut = xPidInner.update(OuterControllerOutput+angle);
   
+  // Calculate filtered angle
+  angleFiltered = angleNotchFilter.update(angle);
 
-  double angleConOutput = thetaGain*angleController.update(-angle*PI/180);
-  angleConOutput = angleNotchFilter.update(angleConOutput);
-
+  // X-controller
+  double angleConOutput = thetaGain*angleController.update(-angleFiltered*PI/180);
   double xConOutput = xGain*xController.update(xRef-xPos, 0.01);
   double XconOut = xConOutput-angleConOutput;
 
@@ -304,7 +295,6 @@ void automatic() {
 
   digitalWrite(enable_y,HIGH);
   analogWrite(pwm_y,pwmY);
-  Serial.println(String(millis())+ "," + String(xPos) + "," + String(xRef) + "," + String(angle) + "," + String(XconOut));
 }
 
 
@@ -350,5 +340,6 @@ void loop() {
     prevTime1 = micros();
     input(); // Read inputs
     automatic(); // Automatic control
+    inputAngleSensor(); // Reads angle sensor in order to avoid overflow value not used (Sensor is read approx 200 Hz because of this)
   }
 }
