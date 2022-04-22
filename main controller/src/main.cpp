@@ -241,9 +241,20 @@ void manuel() {
 lead_lag xController = lead_lag(1/XleadZeroCoef, 1/XleadPoleCoef, XleadZeroCoef/XleadPoleCoef);
 PID angleController = PID(XP, XI, XD, 0, false);
 
-// Notch filter that removes unwanted angle frequencies
-float b[3]  = {1.0, -1.9553, 0.9738};
-float a[3] = {1.0, -1.7276, 0.7462};
+// Notch filter that removes unwanted angle frequencies (old)
+// float b[3] = {1.0, -1.9553, 0.9738};
+// float a[3] = {1.0, -1.7276, 0.7462};
+
+/* Pre-warped Tustin-filter (Wiki)
+Dz_spike =
+ 
+  0.8649 z^2 - 1.711 z + 0.8649
+  -----------------------------
+     z^2 - 1.711 z + 0.7298
+*/
+float b[3] = {0.8649, -1.711, 0.8649};
+float a[3] = {1.0000, -1.711, 0.7298};
+
 IIR angleNotchFilter = IIR(a, b);
 
 // PID controller for y-axis
