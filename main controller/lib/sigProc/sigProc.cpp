@@ -124,7 +124,7 @@ IIR::IIR(float a_in[3], float b_in[3]){
 
 }
 
-double IIR::update(double input){
+float IIR::update(float input){
     x[2] = x[1]; x[1] = x[0];
     x[0] = input;
 

@@ -43,14 +43,14 @@ class PID{
 class IIR{
     public:
         IIR(float a_in[3], float b_in[3]);
-        double update(double input);
-        double update(double input,uint32_t dtime);
+        float update(float input);
+        float update(float input,uint32_t dtime);
         void restart();
     private:
-        double a[3], b[3];
-        double x[3], y[3];
+        float a[3], b[3];
+        float x[3], y[3];
         uint32_t prev_time;
-        double prev_error = 0;
+        float prev_error = 0;
 };
 
 class forwarEuler{
