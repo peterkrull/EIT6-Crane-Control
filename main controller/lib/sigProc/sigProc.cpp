@@ -114,6 +114,9 @@ b[0] + b[1]*z^-1 + b[2]*z^-2
 a[0] + a[1]*z^-1 + a[2]*z^-2
 
 */
+
+IIR::IIR(){}
+
 IIR::IIR(float a_in[3], float b_in[3]){
 
     a[0] = a_in[0]; a[1] = a_in[1]; a[2] = a_in[2];
@@ -121,7 +124,7 @@ IIR::IIR(float a_in[3], float b_in[3]){
 
     x[0] = 0; x[1] = 0; x[2] = 0; 
     y[0] = 0; y[1] = 0; y[2] = 0;
-
+    
 }
 
 float IIR::update(float input){
@@ -143,6 +146,30 @@ float IIR::update(float input){
     y[0] = output;
 
     return output;
+}
+
+NotchFilter::NotchFilter(float Fc, float Fb,float Ts) {
+    float wc = Fc*2*PI;
+    wc = 2/Ts*tan(wc*Ts/2);
+
+    float wb = Fb*2*PI;
+
+    float a[3]; float b[3];
+
+    float b_temp = wc*wc*Ts*Ts;
+    b[0] =  b_temp + 4;
+    b[1] = (b_temp - 4)*2;
+    b[2] =  b_temp + 4; 
+
+    a[0] = b[0] + 2*wb*Ts;
+    a[1] = b[1];
+    a[2] = b[2] - 2*wb*Ts;
+
+    iir = IIR(a,b);
+}
+
+float NotchFilter::update(float input){
+    return iir.update(input);
 }
 
 forwarEuler::forwarEuler(){}

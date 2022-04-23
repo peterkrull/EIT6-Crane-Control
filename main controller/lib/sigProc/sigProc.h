@@ -42,6 +42,7 @@ class PID{
 
 class IIR{
     public:
+        IIR();
         IIR(float a_in[3], float b_in[3]);
         float update(float input);
         float update(float input,uint32_t dtime);
@@ -51,6 +52,16 @@ class IIR{
         float x[3], y[3];
         uint32_t prev_time;
         float prev_error = 0;
+};
+
+class NotchFilter{
+    public:
+        NotchFilter(float Fc, float Fb,float Ts);
+        float update(float input);
+        float update(float input,uint32_t dtime);
+        void restart();
+    private:
+        IIR iir;
 };
 
 class forwarEuler{
