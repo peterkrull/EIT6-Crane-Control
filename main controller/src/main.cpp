@@ -1,6 +1,6 @@
 // Include libraries  
 #include <Arduino.h>
-#include <Functions.h>
+#include <functions.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -8,349 +8,252 @@
 #include "sigProc.h"
 #include "path.h"
 #include "math.h"
+#include "pinDefinitions.h"
+#include "dataStructures.h"
+#include "displayHandler.h"
+
+// Configuration
+#define SAMPLEHZ 100        // Control loop sample frequency
+#define OLEDHZ   30         // Oled display refresh rate
+// #define USEPATHALGO      // Uncomment if path algorithm is to be used
 
 // Definitions for screen
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 32
-#define OLED_RESET     -1
-#define SCREEN_ADDRESS 0x3C
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+#define SCREEN_WIDTH    128
+#define SCREEN_HEIGHT   32
+#define OLED_RESET      -1
+#define SCREEN_ADDRESS  0x3C
 
-// Define input pins
-#define joystick_x A9 // Joystick x-axis
-#define joystick_y A8 // Joystick y-axis
-#define joystick_sw A10 // Joystick switch
-#define magnet_sw 2 // Magnet switch
-#define auto_manuel_sw 3 // Switch from manuel to automatic control
-#define x_pos A0 // Input from x-axis potentiometer
-#define y_pos A1 // Input from y-axis potentiometer
-#define x_driver_AO1 A5 // Input from x motor driver AO1
-#define x_driver_AO2 A4 // Input from x motor driver AO2
-#define y_driver_AO1 A3 // Input from y motor driver AO1
-#define y_driver_AO2 A2 // Input from y motor driver AO2
+// x-controller variables
+#define xOuterZ 2.41
+#define xOuterP 0.35
+#define xOuterG 1.50
 
-// Define output pins
-#define enable_x 8 // Enable driver x
-#define enable_y 9 // Enable driver y
-#define pwm_x 10 // PWM pin driver x
-#define pwm_y 11 // PWM pin driver x
-#define magnet_led 50 // LED showing status of magnet
-#define auto_manuel_led 52 // LED showing status of auto or manuel control
+#define xInnerP 0.9
+#define xInnerD 9.0
+#define xInnerI 0.0
 
-// Global input variables
-float joystickX = 0; // Joystick x-axis
-float joystickY = 0; // Joystick y-axis
-bool joystickSw = 0; // Joystick switch
-bool magnetSw = 0; // State of magnet switch
-bool autoManuelSw = 0; // State of manuel or automatic control
-float xPos = 0; // Position of x-axis
-float yPos = 0; // Position of y-axis
-float angle = 0; // Angle of head
-float angleFiltered = 0; // Filtered angle of head
-float prevAngle = 0; // Previous angle inside +- 35 degrees  
-int yDriverAO1 = 0; // Value of y motor driver A01
-int yDriverAO2 = 0; // Value of y motor driver A02
-int xDriverAO1 = 0; // Value of x motor driver A01
-int xDriverAO2 = 0; // Value of x motor driver A02
+// y-controller variables
+#define yP 150.0
+#define yI 0.000
+#define yD 0.750
+#define yLP 0.05
 
-// Global output variables
-int pwmX = 127; // PWM value x motor driver
-int pwmY = 127; // PWM value y motor driver
+// Controllers on the x-axis
+lead_lag xOuterController = lead_lag(xOuterZ,xOuterP,xOuterG);
+PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0, false);
+
+// PID controller for y-axis
+PID yController = PID(yP,yI,yD,yLP);
+
+// Loop sample period
+uint32_t Ts = 1e6/SAMPLEHZ;
+
+// Data struct definitions
+xy_float  ref;
+xy_pwm    pwm;
+inputs    in;
 
 // Time variables
-uint32_t prevTime1 = 0;
-uint32_t prevTime = 0;
-uint16_t delta =0;
-uint32_t screenTimer;
-int sampleTime = 10000; // 10 ms.    // Path algorithme speed test will fail if lower than 10 ms.
+uint32_t sampleTimer  = 0;
+uint32_t screenTimer  = 0;
+uint32_t loopTime     = 0;
 
-// Container pos
-float xContainer = 0; // Position of container x-axis
-float yContainer = 0; // Position of container y-axis
+#ifdef USEPATHALGO
+QauyToShip testQuayToShip = QauyToShip();
+ShipToQauy testShipToQuay = ShipToQauy();
+#endif
 
-// Speeds
-float xContainerSpeed = 0; // Speed of container x-axis
-float yContainerSpeed = 0; // Speed of container y-axis
-float ContainerSpeed = 0; // Speed of container
-float xSpeed = 0; // Speed of x-axis
-float ySpeed = 0; // Speed of y-axis
+// Display object instantiation
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-
-//Xcontroller variables
-float XleadZeroCoef = 2.41;
-float XleadPoleCoef = 0.35;
-float XP = .10;
-float XD = 1;
-float XI = 0;
-float thetaGain = 9;
-float xGain = 1.5;
-
+// Instantiate filters and forward Eulers
+low_pass oledLowpass           = low_pass(0.2);             // Lowpass filter tau = 200 ms.
+low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
+low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
+low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
+forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
+forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
+forwardEuler xContainerVelCal   = forwardEuler();           // For calculating container speed in the x-axis
+forwardEuler yContainerVelCal   = forwardEuler();           // For calculating container speed in the y-axis
+NotchFilter angleNotchFilter    = NotchFilter(2.35,5,Ts);   // Notch filter for removing 2.35 Hz component
 
 // Run on startup
 void setup() {
 
-  // Set input pinMode
-  pinMode(joystick_x,INPUT);
-  pinMode(joystick_y,INPUT);
-  pinMode(joystick_sw,INPUT);
-  pinMode(magnet_sw,INPUT);
-  pinMode(auto_manuel_sw,INPUT);
-  pinMode(x_pos,INPUT);
-  pinMode(y_pos,INPUT);
+    // Set safe default reference values
+    #ifndef USEPATHALGO
+    ref.x = 2;  ref.y = 1;
+    #endif
 
-  // Set output pinMode
-  pinMode(enable_x,OUTPUT);
-  pinMode(enable_y,OUTPUT);
-  pinMode(pwm_x,OUTPUT);
-  pinMode(pwm_y,OUTPUT);
-  pinMode(auto_manuel_led,OUTPUT);
-  pinMode(magnet_led,OUTPUT);
+    // Set input pinMode
+    pinMode(pin_joystick_x,   INPUT);
+    pinMode(pin_joystick_y,   INPUT);
+    pinMode(pin_joystick_sw,  INPUT);
+    pinMode(pin_magnet_sw,    INPUT);
+    pinMode(pin_ctrlmode_sw,  INPUT);
+    pinMode(pin_pos_x,        INPUT);
+    pinMode(pin_pos_y,        INPUT);
 
-  // Initialize serial
-  Serial3.begin(9600); // Communication with head
-  Serial.begin(115200); // Communication with PC
+    // Set output pinMode
+    pinMode(pin_enable_x,     OUTPUT);
+    pinMode(pin_enable_y,     OUTPUT);
+    pinMode(pin_pwm_x,        OUTPUT);
+    pinMode(pin_pwm_y,        OUTPUT);
+    pinMode(pin_ctrlmode_led, OUTPUT);
+    pinMode(pin_magnet_led,   OUTPUT);
 
-  // Initialize screen
-  delay(2000); // This delay ensures that the screen is started before sending data to it
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
-  }
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
-  display.println(F("Wait crane starting.."));
-  display.setCursor(0,20);
-  display.println(F("EIT6 CE6 630"));
-  display.display();
-  delay(2000);
+    // Initialize serial
+    Serial3.begin(9600);  // Communication with head
+    Serial.begin(115200); // Communication with PC
 
-  // Printing starting on serial 0
-  Serial.println("Starting...");
+    // Initialize Oled display
+    initializeDisplay(&display);
 
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
-  display.println(F("Crane Ready!"));
-  display.display();
-
-  Serial.println("//XleadZeroCoefficient: " + String(XleadZeroCoef) + ", XleadPoleCoefficient: " + String(XleadPoleCoef) + ", XleadGain" + String(xGain));
-  Serial.println("//PX: " + String(XP)+ ", IX: " + String(XI) + ", DX: " + String(XD) +", angleGain" + String(thetaGain));
+    // Print controller values
+    Serial.println("//xOuterZ: " + String(xOuterZ) + ", xOuterP: " + String(xOuterP) + ", xOuterG: " + String(xOuterG));
+    Serial.println("//xInnerP: " + String(xInnerP) + ", xInnerI: " + String(xInnerI) + ", xInnerD: " + String(xInnerD));
+    Serial.println("//yP: " + String(yP) + ", yI: " + String(yI) + ", yD: " + String(yD));
 }
-
-// Read data for the angle sensor. Must run often.
-void inputAngleSensor(){
-    if (Serial3.available() > 0) {
-      String angleData;
-      angleData = Serial3.readStringUntil(*"\n");
-      angle = angleData.toFloat();
-
-      if(angle > 35 || angle < -35){
-        angle = prevAngle;
-      }
-      prevAngle = angle;
-  }
-}
-
-// Reads all inputs to the system
-low_pass xPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
-low_pass yPosLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
-low_pass xContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
-low_pass yContainerLowpasss = low_pass(0.03); // Lowpass filter tau = 30  ms.
-low_pass angleLowpass = low_pass(1/30); // Lowpass angle to remove obscene values
-forwarEuler xForwarEuler = forwarEuler(); // Make object xForwarEuler used for calculating speed in the y-axis
-forwarEuler yForwarEuler = forwarEuler(); // Make object yForwarEuler used for calculating speed in the x-axis
-forwarEuler xContainerForwarEuler = forwarEuler(); // Make object xContainerForwarEuler used for calculating speed in the container x-axis
-forwarEuler yContainerForwarEuler = forwarEuler(); // Make object yContainerForwarEuler used for calculating speed in the container y-axis
 
 // Function that reads the inputs to the system and makes convertions
-void input() {
-  joystickX = analogRead(joystick_x); // Reads joystick x-direction
-  joystickY = analogRead(joystick_y); // Reads joystick y-direction
-  joystickSw = digitalRead(joystick_sw); // Reads joystick switch
-  magnetSw = digitalRead(magnet_sw); // Reads magnet switch on the controller
-  autoManuelSw = digitalRead(auto_manuel_sw); // Reads manuel or automatic switch on the controller
-  xPos = 0.0048*analogRead(x_pos)-0.6765; // Read x-potentiometer and convert to meters
-  yPos = (0.0015*analogRead(y_pos)-0.0025)-0.07; // Read y-potentiometer and convert to meters
-  xDriverAO1 = analogRead(x_driver_AO1); // Read analouge output from driver
-  xDriverAO2 = analogRead(x_driver_AO2); // Read analouge output from driver
-  yDriverAO1 = analogRead(y_driver_AO1); // Read analouge output from driver
-  yDriverAO2 = analogRead(y_driver_AO2); // Read analouge output from driver
+void readInput() {
 
-  //Anlge sensor input
-  inputAngleSensor(); // Reads the angle of the head
-  angle = angleLowpass.update(angle); // lowpass angle of the head
+    // Fetches reference point from serial readout
+    #ifndef USEPATHALGO
+    getSerialReference(&Serial,&ref);
+    #endif
 
-  // Calculate container pos
-  xContainer = xPos+(sin((-angle*PI)/180))*yPos; // Calculate x-container position
-  yContainer = yPos+(cos((-angle*PI)/180))*yPos; // Calculate y-container position
+    in.joystick.x    = analogRead(pin_joystick_x);          // Reads joystick x-direction
+    in.joystick.y    = 511.5-analogRead(pin_joystick_y);    // Reads joystick y-direction
+    in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
+    in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
+    in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.6765; // Read x-potentiometer and convert to meters
+    in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0725; // Read y-potentiometer and convert to meters
+    in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
+    in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
+    in.yDriverAO1    = analogRead(pin_y_driver_AO1);        // Read analog output from driver
+    in.yDriverAO2    = analogRead(pin_y_driver_AO2);        // Read analog output from driver
 
-  // Calculate speed x-axis and y-axis
-  xSpeed = xForwarEuler.update(xPosLowpasss.update(xPos)); // Calculate speed in x-axis
-  ySpeed = yForwarEuler.update(yPosLowpasss.update(yPos)); // Calculate speed in y-axis
+    //Anlge sensor input
+    getAngleSensor(&Serial3,&in.angle);
 
-  // Calculate contrainer speed
-  xContainerSpeed = xContainerForwarEuler.update(xContainerLowpasss.update(xContainer)); // Calculate speed of container x-axis
-  yContainerSpeed = yContainerForwarEuler.update(yContainerLowpasss.update(xContainer)); // Calculate speed of container y-axis
-  ContainerSpeed = sqrt(xContainerSpeed*xContainerSpeed + yContainerSpeed*yContainerSpeed); // Calculate speed of container
-  
+    // Filter angle input : in -> [ lowpass ] -> [ notch ] -> out
+    in.angle = angleNotchFilter.update(angleLowpass.update(in.angle));
+
+    // Filter trolley position inputs
+    in.posTrolley.x = xPosLowpasss.update(in.posTrolley.x);
+    in.posTrolley.y = yPosLowpasss.update(in.posTrolley.y);
+
+    // Calculate container position
+    in.posContainer.x = in.posTrolley.x+(sin((-in.angle*PI)/180))*in.posTrolley.y;
+    in.posContainer.y = in.posTrolley.y+(cos((-in.angle*PI)/180))*in.posTrolley.y;
+
+    // Calculate speed x-axis and y-axis
+    in.velTrolley.x = xTrolleyVelCal.update(in.posContainer.x);
+    in.velTrolley.y = yTrolleyVelCal.update(in.posContainer.y);
+
+    // Calculate contrainer speed
+    in.velContainer.x = xContainerVelCal.update(in.posContainer.x);
+    in.velContainer.y = yContainerVelCal.update(in.posContainer.y);
+
+    // Calculates absolute velocity of container
+    in.velContainerAbs = sqrt(pow(in.velContainer.x,2) + pow(in.velContainer.y,2));
 }
 
-//Manuel control
-void manuel() {
-  // Turns on LED when in manuel control
-  digitalWrite(auto_manuel_led,HIGH);
+//Manual control
+void manualControl() {
+    // Turns on LED when in manual control
+    digitalWrite(pin_ctrlmode_led,HIGH);
 
-  // Determines the pwm value from joystick position with software endstop (endstop(pwm, min, max, pos))
-  pwmX = endstop(joystickOutputFormat(joystickX), 0.0, 4, xPos);
-  pwmY = endstop(255 - joystickOutputFormat(joystickY), 0.0, 1.62, yPos);
-  
-  // Sends pwm signals to motor driver x
-  if (joystickDeadZone(joystickX) == 1) {   //If joystick is not in the middel
-    analogWrite(pwm_x,pwmX);
-    digitalWrite(enable_x, HIGH);
-  }
-  else {
-    analogWrite(pwm_x,127);                 //if joystick is in the middel
-    digitalWrite(enable_x, LOW);
-  }
+    // Calculates actuations based on joystick and trolley position
+    pwm.x = endstop(in.joystick.x, 0.0, 4.00, in.posTrolley.x);
+    pwm.y = endstop(in.joystick.y, 0.0, 1.62, in.posTrolley.y);
+    
+    // Sends pwm signals to motor driver x
+    // if joystick is not in middle position
+    if (joystickDeadZone(in.joystick.x) == 1) {
+        analogWrite(pin_pwm_x,pwm.x);
+        digitalWrite(pin_enable_x, HIGH);
+    } else {
+        analogWrite(pin_pwm_x,127);
+        digitalWrite(pin_enable_x, LOW);
+    }
 
-  // Sends pwm signals to motor driver y
-  if (joystickDeadZone(joystickY) == 1) {   //If joystick is not in the middel
-    analogWrite(pwm_y,pwmY);
-    digitalWrite(enable_y, HIGH);
-  }
-  else {
-    analogWrite(pwm_y,127);                 //if joystick is in the middel
-    digitalWrite(enable_y, LOW);
-  }
+    // Sends pwm signals to motor driver y
+    // if joystick is not in middle position
+    if (joystickDeadZone(in.joystick.y) == 1) {
+        analogWrite(pin_pwm_y,pwm.y);
+        digitalWrite(pin_enable_y, HIGH);
+    } else {
+        analogWrite(pin_pwm_y,127);
+        digitalWrite(pin_enable_y, LOW);
+    }
 
-  // Turns on LED and magnet when magnet switch is active
-  if (magnetSw == 1)
-  {
-    turnOnElectromagnet(true, magnet_led);
-  }
-  else{
-    turnOnElectromagnet(false, magnet_led);
-  }
+    // Turns on LED and magnet when magnet switch is active
+    if (in.magnetSw == 1) {
+        turnOnElectromagnet(true, pin_magnet_led);
+    } else {
+        turnOnElectromagnet(false, pin_magnet_led);
+    }
 }
-
-// Controllers on the x-axis
-lead_lag xController = lead_lag(1/XleadZeroCoef, 1/XleadPoleCoef, XleadZeroCoef/XleadPoleCoef);
-PID angleController = PID(XP, XI, XD, 0, false);
-
-// Notch filter that removes unwanted angle frequencies (old)
-// float b[3] = {1.0, -1.9553, 0.9738};
-// float a[3] = {1.0, -1.7276, 0.7462};
-
-/* Pre-warped Tustin-filter (Wiki)
-Dz_spike =
- 
-  0.8649 z^2 - 1.711 z + 0.8649
-  -----------------------------
-     z^2 - 1.711 z + 0.7298
-*/
-float b[3] = {0.8649, -1.711, 0.8649};
-float a[3] = {1.0000, -1.711, 0.7298};
-
-IIR angleNotchFilter = IIR(a, b);
-
-// PID controller for y-axis
-PID yPid = PID(150,0,75,0.05);
-
-//QauyToShip testQuayToShip = QauyToShip();
-
-low_pass oled_freq_lp = low_pass(0.2);
-
-// Refference signals (Can be used if refference system is inactive)
-float xRef = 2;
-float yRef = 1;
 
 // Automatic control
-void automatic() {
-  // Turn off LED when automatic control is enabled
-  digitalWrite(auto_manuel_led, LOW);
+void automaticControl() {
+    // Turn off LED when automatic control is enabled
+    digitalWrite(pin_ctrlmode_led, LOW);
 
-  //Define enable value for x-axis motor
-  bool enableXmotor = true;
+    //Define enable value for x-axis motor
+    bool enableXmotor = true;
 
-  //testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
+    #ifdef USEPATHALGO
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y, in.posContainer.x, in.velContainerAbs, &ref.x, &ref.y, pin_magnet_led);
+    #endif
 
-  
-  // Calculate filtered angle
-  angleFiltered = angleNotchFilter.update(angle);
+    // X-controller
+    double xInnerConOut = xInnerController.update(-in.angle*PI/180);
+    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, 0.01)*xOuterG;
+    double xConOut      = xOuterConOut-xInnerConOut;
 
-  // X-controller
-  double angleConOutput = thetaGain*angleController.update(-angleFiltered*PI/180);
-  double xConOutput = xGain*xController.update(xRef-xPos, 0.01);
-  double XconOut = xConOutput-angleConOutput;
+    // Y-controller
+    double yConOut = yController.update(ref.y-in.posTrolley.y);
 
+    // Make current to pwm conversion. This also removes friction in the system
+    uint8_t pwmx = currentToPwmX(xConOut, in.velTrolley.x, &enableXmotor);
+    uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
+    
+    // Definere software endstops
+    pwm.x = endstop(pwmx, 0.2, 3.80, in.posTrolley.x);
+    pwm.y = endstop(pwmy, 0.0, 1.22, in.posTrolley.y);
 
-  // Y-controller
-  double YconOut = yPid.update(yRef-yPos);
+    // Outputs the PWM signal
+    digitalWrite(pin_enable_x, enableXmotor);
+    analogWrite(pin_pwm_x,pwm.x);
 
-  // Make current to pwm conversion. This also removes friction in the system
-  uint8_t pwmx = currentToPwmX(XconOut, xSpeed, &enableXmotor);
-  uint8_t pwmy = currentToPwmY(YconOut, magnetSw, ySpeed);
-  
-
-  // Definere software endstops
-  pwmX = endstop(pwmx,0.2,3.8,xPos);
-  pwmY = endstop(pwmy,0,1.22,yPos);
-
-  // Outputs the PWM signal
-  digitalWrite(enable_x, enableXmotor);
-  analogWrite(pwm_x,pwmX);
-
-  digitalWrite(enable_y,HIGH);
-  analogWrite(pwm_y,pwmY);
-}
-
-
-// Display system information on OLED
-void screen() {
-  if (1e6/(micros()-screenTimer) < 30){ // Update OLED screen with xx frequency
-    screenTimer = micros();
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0,0);
-    display.println(("X "+String(xPos)));
-    display.setCursor(70,0);
-    display.println(("Y "+String(yPos)));
-    display.setCursor(0,10);
-    display.println(("A "+String(angle)));
-    display.setCursor(70,10);
-    display.println(("Hz "+String(1e6/float(oled_freq_lp.update(delta)))));
-    display.setCursor(0,20);
-    display.println(("Xc "+String(xContainer)));
-    display.setCursor(70,20);
-    display.println(("Yc "+String(yContainer)));
-    display.display();
-  }
+    digitalWrite(pin_enable_y,HIGH);
+    analogWrite(pin_pwm_y,pwm.y);
 }
 
 // Main loop
 void loop() {
-  // Calculate loop time
-  uint32_t xmicros = micros();
-  delta = xmicros - prevTime;
-  prevTime = xmicros;
 
-  // Determines manuel or automatic operation
-  if(digitalRead(auto_manuel_sw) == 1) {
-    screen(); // Update screen
-    input();  // Read inputs
-    manuel(); // Manuel control
-  } 
+    // Calculate loop frequency
+    uint32_t xmicros = micros();
+    uint16_t loopFreq = 1e6/oledLowpass.update(xmicros - loopTime);
+    loopTime = xmicros;
 
-  // if auctomatic and sample time
-  else if(micros() > sampleTime + prevTime1){
-    prevTime1 = micros();
-    input(); // Read inputs
-    automatic(); // Automatic control
-    inputAngleSensor(); // Reads angle sensor in order to avoid overflow value not used (Sensor is read approx 200 Hz because of this)
-  }
+    // For manual control
+    if(digitalRead(pin_ctrlmode_sw) == 1) {
+        displayInfo(&display,in,loopFreq,&screenTimer);
+        readInput();
+        manualControl(); 
+    } 
+
+    // For automatic control
+    else if(micros() > Ts + sampleTimer){
+        sampleTimer += Ts;
+        readInput();
+        automaticControl();
+        getAngleSensor(&Serial3,&in.angle); // Reads angle again to avoid serial buffer overflow
+    }
 }

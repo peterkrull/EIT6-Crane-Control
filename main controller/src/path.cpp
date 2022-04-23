@@ -1,5 +1,5 @@
 #include "path.h"
-#include "Functions.h"
+#include "functions.h"
 
 QauyToShip::QauyToShip(){}
 

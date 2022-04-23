@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "functions.h"
 
 bool joystickDeadZone(float dataJoystick){
     bool toReturn;
@@ -13,37 +14,18 @@ bool joystickDeadZone(float dataJoystick){
     return toReturn;
 }
 
-int joystickOutputFormat(float dataJoystick){
-    int toReturn = int(0.19844*dataJoystick+26);
-    return toReturn;
-}
-
-// Software endstops (works on the pwm value)
+// Software endstops
 int endstop(int pwm, float min, float max, float pos){
-    int pwmEndstop = 127;
-    bool dir = 0;
-    pwmEndstop = pwm;
 
-    // Check direction (used so it can move in the other direction)
-    if (pwm < 127) {
-        dir = 0;
+    // Check if endstop is hit
+    if ((pos > max && pwm < 511.5) || (pos < min && pwm > 511.5)) {
+        return 127;
+    } else {
+        return pwm/4;
     }
-    else {
-        dir = 1;
-    }
-    
-    // Chek if endstop is hit
-    if (pos > max && dir == 1) {
-    pwmEndstop = 127;
-    }
-    if (pos < min && dir == 0) {
-    pwmEndstop = 127;
-    }
-
-    return pwmEndstop;
 }
 
-uint8_t currentToPwmY(double current, bool magnetSw, float ySpeed) {
+uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
 
     // Make more linear for y-axis (axis = 0)
     float coulombFriction = 0;
@@ -51,7 +33,7 @@ uint8_t currentToPwmY(double current, bool magnetSw, float ySpeed) {
     if (magnetSw == 1){
         current = current - 1.35; // Current gravity with container
         coulombFriction = 3.0;
-    } else{
+    } else {
         current = current - 0.33; // Current gravity without container
         coulombFriction = 2.4;
     }
@@ -71,22 +53,16 @@ uint8_t currentToPwmY(double current, bool magnetSw, float ySpeed) {
     }
 
     // Equalize currents around gravity
-    if(current > 10-1.35 && magnetSw ==1){
-        current = 10-1.35;
+    if (current > 10 - 1.35 && magnetSw ==1) {
+        current = 10 - 1.35;
+    } else if (current > 10 - 0.33 && magnetSw ==0) {
+        current = 10 - 0.33;
     }
-    if(current > 10-0.33 && magnetSw ==0){
-        current = 10-0.33;
-    }
-    if(current < -10){
-        current = -10;
-    }
-    
 
     //Check for correct current value
-    if(current > 10){
+    if (current > 10) {
         current = 10;
-    }
-    if(current < -10){
+    } else if (current < -10) {
         current = -10;
     }
     
@@ -129,4 +105,44 @@ void turnOnElectromagnet(bool status, int LEDPin){
     digitalWrite(LEDPin,LOW);
     Serial3.println("M0");
   }
+}
+
+/*
+Updates the reference x,y values from some serial input.
+
+The format to send is the following:
+
+x:X.X\n
+and
+y:Y.Y\n
+
+Where X.X and Y.Y denote the reference point.
+When using the Arduino Serial terminal, the \n is added autonatically.
+*/
+void getSerialReference(HardwareSerial *serial,xy_float *reference) {
+    if ( serial->available() > 0 ) {
+        String input = serial->readStringUntil(*"\n");
+
+        // Get value of x from serial string
+        int xIndex = input.indexOf("x:");
+        if (xIndex > -1){
+            float value = input.substring(xIndex+2,xIndex+3).toFloat();
+            if (value > 0 && value < 4) {reference->x = value;}
+        }
+
+        // Get value of y from serial string
+        int yIndex = input.indexOf("y:");
+        if (yIndex > -1){
+            float value = input.substring(xIndex+2,xIndex+3).toFloat();
+            if (value > 0 && value < 1.3) {reference->y = value;}
+        }
+    }
+}
+
+// Fetch angle from serial buffer
+void getAngleSensor(HardwareSerial *serial, float *angle){
+    if (serial->available() > 0) {
+        String angleData = serial->readStringUntil(*"\n");
+        *angle = angleData.toFloat();
+    }
 }

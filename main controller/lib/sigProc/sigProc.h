@@ -64,9 +64,9 @@ class NotchFilter{
         IIR iir;
 };
 
-class forwarEuler{
+class forwardEuler{
     public:
-        forwarEuler();
+        forwardEuler();
         float update(float input);
     private:
         uint32_t prev_time=100000000;

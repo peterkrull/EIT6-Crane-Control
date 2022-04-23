@@ -124,7 +124,7 @@ IIR::IIR(float a_in[3], float b_in[3]){
 
     x[0] = 0; x[1] = 0; x[2] = 0; 
     y[0] = 0; y[1] = 0; y[2] = 0;
-    
+
 }
 
 float IIR::update(float input){
@@ -172,9 +172,9 @@ float NotchFilter::update(float input){
     return iir.update(input);
 }
 
-forwarEuler::forwarEuler(){}
+forwardEuler::forwardEuler(){}
 
-float forwarEuler::update(float input){
+float forwardEuler::update(float input){
     output = (input - prev_input) / (micros() - prev_time);
     prev_time = micros();
     prev_input = input;
