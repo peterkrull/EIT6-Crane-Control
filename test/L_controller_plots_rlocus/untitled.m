@@ -252,16 +252,16 @@ figure(8)
 margin(G)
 
 figure(9)
-ny_kp = 1000;
-ny_kd = 1/5;
+ny_kp = 150;
+ny_kd = 1/2;
 
 con = ny_kp*(1+ny_kd*s)
 margin(G*con)
 
 figure(10)
 step(feedback(con*G,1))
-pole(con*G)
-zero(con*G)
+pole(feedback(con*G,1))
+zero(feedback(con*G,1))
 
 %%
 G_ny = (1+1/2*s)/(1+1/2*s);
