@@ -3,23 +3,30 @@
 
 class QauyToShip{
     public:
-        QauyToShip();
-        void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed, float *xRefpoint, float *yRefpoint, int electroMagnetLED);
+        QauyToShip(float *xRefpoint, float *yRefpoint, int electroMagnetLED);
+        void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed);
         void QauyToShip::reset();
 
     private:
         int step=0;
         uint16_t failTime =0;
+        float *LxRefpoint=0;
+        float *LyRefpoint=0;
+        int LelectroMagnetLED=0;
 };
 
 
 
 class ShipToQauy{
     public:
-        void ShipToQauy::update(float xPos, float yPos, float xContainer, float containerSpeed, float *xRefpoint, float *yRefpoint, int electroMagnetLED);
+        ShipToQauy(float *xRefpoint, float *yRefpoint, int electroMagnetLED);
+        void ShipToQauy::update(float xPos, float yPos, float xContainer, float containerSpeed);
         void ShipToQauy::reset();
 
     private:
         int step=0;
         uint16_t failTime =0;
+        float *LxRefpoint=0;
+        float *LyRefpoint=0;
+        int LelectroMagnetLED=0;
 };

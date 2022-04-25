@@ -124,9 +124,9 @@ void inputAngleSensor(){
 }
 
 // Reads all inputs to the system
-low_pass xPosLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass xContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
-low_pass yContainerLowpasss = low_pass(30000); //Lowpass filter tau = 30  ms.
+low_pass xPosLowpasss = low_pass(30000);        //Lowpass filter tau = 30  ms.
+low_pass xContainerLowpasss = low_pass(30000);  //Lowpass filter tau = 30  ms.
+low_pass yContainerLowpasss = low_pass(30000);  //Lowpass filter tau = 30  ms.
 forwarEuler xForwarEuler = forwarEuler();
 forwarEuler xContainerForwarEuler = forwarEuler();
 forwarEuler yContainerForwarEuler = forwarEuler();
@@ -198,19 +198,21 @@ void manuel() {
 PID xPid = PID(5,0,1,0.05);
 PID yPid = PID(100,0,40,0.05);
 
-QauyToShip testQuayToShip = QauyToShip();
+
 
 low_pass oled_freq_lp = low_pass(0.2);
 
 float xRef = 0;
 float yRef = 0;
 
+QauyToShip testQuayToShip = QauyToShip(&xRef, &yRef, magnet_led);
+
 // Automatic control
 void automatic() {
   // Turn off LED when automatic control is enabled
   digitalWrite(auto_manuel_led, LOW);
 
-  testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed, &xRef, &yRef, magnet_led);
+  testQuayToShip.update( xPos, yPos, xContainer, ContainerSpeed);
   double XconOut = xPid.update(xRef-xContainer);
   double YconOut = yPid.update(yRef-yPos);
 
