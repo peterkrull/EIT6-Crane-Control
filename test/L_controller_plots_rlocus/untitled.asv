@@ -185,10 +185,9 @@ grid on
 figure(5)
 rlocus(G*((1+(1/2)*s)))
 %rlocus(G)
-zgrid(0.71,1)
+%zgrid(0.71,1)
 %xlim([-1.2 0.2])
 %ylim([-1.2 1.2])
-xlim([-4.5 0.1])
 %ylim([-2.5 2.5])
 x = [0.54,0.54];
 y = [0.6,0.5];
@@ -196,10 +195,13 @@ x1 = [0.55,0.55];
 y1 = [0.4,0.49];
 a = annotation('textarrow',x,y,'String','Gain = 150 ');
 b = annotation('textarrow',x1,y1,'String','Gain = inf ');
+%text(-1.5,0.85,'\zeta =')
+%text(-1.5,-0.85,'\zeta =')
+%text(-1.58,0.1,'\omega_n =')
+
+%text(-0.8,0.15,'45.23^{\circ}', 'FontSize', 8)
+xlim([-4.5 0.1])
 axis equal
-text(-1.5,0.85,'\zeta =')
-text(-1.5,-0.85,'\zeta =')
-text(-1.58,0.1,'\omega_n =')
 
 
 x0=0;
@@ -209,6 +211,7 @@ x0=0;
    set(gcf,'position',[x0,y0,plotwidth,height])
    
 exportgraphics(gcf,'plant_rlocus_zero_2.pdf','ContentType','vector')
+
 
 figure(6)
 %rlocus(G*((1+(1/2)*s)))
@@ -229,7 +232,7 @@ text(-0.99,0.755,'\zeta =')
 text(-0.99,-0.755,'\zeta =')
 text(-1.24,0.03,'\omega_n =')
 
-text(-0.3,0.09,'45^{\circ}')
+text(-0.25,0.3,'45.23^{\circ}', 'FontSize', 8)
 
 x0=0;
    y0=0;
@@ -237,4 +240,24 @@ x0=0;
    height=400;
    set(gcf,'position',[x0,y0,plotwidth,height])
    
-exportgraphics(gcf,'plant_rlocus_zero_2.pdf','ContentType','vector')
+exportgraphics(gcf,'plant_rlocus.pdf','ContentType','vector')
+
+cl1 = feedback(G*(150*(1+(1/2)*s)),1);
+pole(cl1)
+
+figure(7)
+step(cl1)
+
+figure(8)
+margin(G)
+
+figure(9)
+con = 10000*(1+(1/2)*s)
+margin(G*con)
+
+figure(10)
+step(feedback(con*G,1))
+pole(con*G)
+zero(con*G)
+
+figure(11)

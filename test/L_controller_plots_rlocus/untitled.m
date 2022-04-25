@@ -216,8 +216,8 @@ exportgraphics(gcf,'plant_rlocus_zero_2.pdf','ContentType','vector')
 figure(6)
 %rlocus(G*((1+(1/2)*s)))
 rlocus(G)
-zgrid(0.71,1)
-xlim([-2.5 0.1])
+%zgrid(0.71,1)
+%xlim([-2.5 0.1])
 %ylim([-1.2 1.2])
 %xlim([-4.5 0.2])
 %ylim([-2.5 2.5])
@@ -228,11 +228,11 @@ xlim([-2.5 0.1])
 %a = annotation('textarrow',x,y,'String','Gain = 150 ');
 %b = annotation('textarrow',x1,y1,'String','Gain = inf ');
 axis equal
-text(-0.99,0.755,'\zeta =')
-text(-0.99,-0.755,'\zeta =')
-text(-1.24,0.03,'\omega_n =')
+%text(-0.99,0.755,'\zeta =')
+%text(-0.99,-0.755,'\zeta =')
+%text(-1.24,0.03,'\omega_n =')
 
-text(-0.25,0.3,'45.23^{\circ}', 'FontSize', 8)
+%text(-0.25,0.3,'45.23^{\circ}', 'FontSize', 8)
 
 x0=0;
    y0=0;
@@ -241,3 +241,33 @@ x0=0;
    set(gcf,'position',[x0,y0,plotwidth,height])
    
 exportgraphics(gcf,'plant_rlocus.pdf','ContentType','vector')
+
+cl1 = feedback(G*(150*(1+(1/2)*s)),1);
+pole(cl1)
+
+figure(7)
+step(cl1)
+
+figure(8)
+margin(G)
+
+figure(9)
+ny_kp = 1000;
+ny_kd = 1/5;
+
+con = ny_kp*(1+ny_kd*s)
+margin(G*con)
+
+figure(10)
+step(feedback(con*G,1))
+pole(con*G)
+zero(con*G)
+
+%%
+G_ny = (1+1/2*s)/(1+1/2*s);
+d_ny = (150);
+
+cl_ny = feedback(G_ny*d_ny,1);
+figure(11)
+step(cl_ny)
+
