@@ -66,8 +66,8 @@ uint32_t screenTimer  = 0;
 uint32_t loopTime     = 0;
 
 #ifdef USEPATHALGO
-QauyToShip testQuayToShip = QauyToShip();
-ShipToQauy testShipToQuay = ShipToQauy();
+QauyToShip testQuayToShip = QauyToShip(&ref.x, &ref.y, pin_magnet_led);
+ShipToQauy testShipToQuay = ShipToQauy(&ref.x, &ref.y, pin_magnet_led);
 #endif
 
 // Display object instantiation
@@ -240,7 +240,7 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y, in.posContainer.x, in.velContainerAbs, &ref.x, &ref.y, pin_magnet_led);
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y, in.posContainer.x, in.velContainerAbs);
     #endif
 
     // X-controller
