@@ -18,10 +18,10 @@ bool joystickDeadZone(float dataJoystick){
 int endstop(int pwm, float min, float max, float pos){
 
     // Check if endstop is hit
-    if ((pos > max && pwm < 511.5) || (pos < min && pwm > 511.5)) {
+    if ((pos > max && pwm < 127) || (pos < min && pwm > 127)) {
         return 127;
     } else {
-        return pwm/4;
+        return pwm;
     }
 }
 
@@ -72,7 +72,7 @@ uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
 }
 
 uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
-        if (abs(current) < .2){ //This number can be set to something larger than 0 if no movement is wanted for small currents
+        if (abs(current) < 0.3){ //This number can be set to something larger than 0 if no movement is wanted for small currents
             current = 0;
             *enableXMotor = false;
         } else if (xSpeed < 0) {
@@ -123,19 +123,21 @@ void getSerialReference(HardwareSerial *serial,xy_float *reference) {
     if ( serial->available() > 0 ) {
         String input = serial->readStringUntil(*"\n");
 
-        // Get value of x from serial string
+        // Get value of x and y from serial string
         int xIndex = input.indexOf("x:");
-        if (xIndex > -1){
-            float value = input.substring(xIndex+2,xIndex+3).toFloat();
+        int yIndex = input.indexOf("y:");
+
+        if (xIndex > -1 && yIndex == -1){
+            float value = input.substring(xIndex+2,input.length()).toFloat();
             if (value > 0 && value < 4) {reference->x = value;}
         }
-
-        // Get value of y from serial string
-        int yIndex = input.indexOf("y:");
-        if (yIndex > -1){
-            float value = input.substring(xIndex+2,xIndex+3).toFloat();
+        else if (yIndex > -1 && xIndex == -1){
+            float value = input.substring(yIndex+2,input.indexOf(*"\n")).toFloat();
             if (value > 0 && value < 1.3) {reference->y = value;}
         }
+
+        // Empty buffer
+        while (serial->available() > 0) {serial->read();}
     }
 }
 

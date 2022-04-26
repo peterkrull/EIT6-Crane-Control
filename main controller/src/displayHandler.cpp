@@ -36,7 +36,7 @@ void initializeDisplay(Adafruit_SSD1306 *display){
 }
 
 void displayInfo(Adafruit_SSD1306 *display,inputs in, float frequency,uint32_t *timer) {
-    if (1e6/(micros()-*timer) < 30){ // Update OLED screen with xx frequency
+    if (1e6/(micros()-*timer) < 5){ // Update OLED screen with xx frequency
         *timer = micros();
         display->clearDisplay();
         display->setTextSize(1);

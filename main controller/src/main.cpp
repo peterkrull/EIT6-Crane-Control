@@ -12,6 +12,10 @@
 #include "dataStructures.h"
 #include "displayHandler.h"
 
+#define mainprogram
+
+#ifdef mainprogram
+
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
@@ -24,23 +28,26 @@
 #define SCREEN_ADDRESS  0x3C
 
 // x-controller variables
-#define xOuterZ 2.41
-#define xOuterP 0.35
-#define xOuterG 1.50
+#define xOuterP 1.2
+#define xOuterI 0
+#define xOuterD 1.8
+#define xOuterGain 9
 
-#define xInnerP 0.9
-#define xInnerD 9.0
+#define xInnerP 0.25
 #define xInnerI 0.0
+#define xInnerD 1
+#define xInnerGain 8
 
 // y-controller variables
 #define yP 150.0
 #define yI 0.000
-#define yD 0.750
+#define yD 75.00
 #define yLP 0.05
 
 // Controllers on the x-axis
-lead_lag xOuterController = lead_lag(xOuterZ,xOuterP,xOuterG);
-PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0, false);
+// lead_lag xOuterController = lead_lag(xOuterZ,xOuterP,xOuterG);
+PID xOuterController = PID(xOuterP,xOuterI,xOuterD,0.02);
+PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0.05, false);
 
 // PID controller for y-axis
 PID yController = PID(yP,yI,yD,yLP);
@@ -67,7 +74,7 @@ ShipToQauy testShipToQuay = ShipToQauy();
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // Instantiate filters and forward Eulers
-low_pass oledLowpass           = low_pass(0.2);             // Lowpass filter tau = 200 ms.
+low_pass oledLowpass            = low_pass(0.2);            // Lowpass filter tau = 200 ms.
 low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
@@ -75,7 +82,23 @@ forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating t
 forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
 forwardEuler xContainerVelCal   = forwardEuler();           // For calculating container speed in the x-axis
 forwardEuler yContainerVelCal   = forwardEuler();           // For calculating container speed in the y-axis
-NotchFilter angleNotchFilter    = NotchFilter(2.35,5,Ts);   // Notch filter for removing 2.35 Hz component
+// NotchFilter angleNotchFilter    = NotchFilter(2.35,1,Ts);   // Notch filter for removing 2.35 Hz component
+
+low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
+
+
+/*
+H_z =
+ 
+  0.9697 z^2 - 1.918 z + 0.9697
+  -----------------------------
+     z^2 - 1.918 z + 0.9394
+*/
+
+float b[3] = {0.9697, -1.918, 0.9697};
+float a[3] = {1.0000, -1.918, 0.9394};
+
+IIR angleNotchFilter = IIR(a, b);
 
 // Run on startup
 void setup() {
@@ -110,10 +133,12 @@ void setup() {
     initializeDisplay(&display);
 
     // Print controller values
-    Serial.println("//xOuterZ: " + String(xOuterZ) + ", xOuterP: " + String(xOuterP) + ", xOuterG: " + String(xOuterG));
-    Serial.println("//xInnerP: " + String(xInnerP) + ", xInnerI: " + String(xInnerI) + ", xInnerD: " + String(xInnerD));
-    Serial.println("//yP: " + String(yP) + ", yI: " + String(yI) + ", yD: " + String(yD));
+    // Serial.println("//xOuterZ: " + String(xOuterZ) + ", xOuterP: " + String(xOuterP) + ", xOuterG: " + String(xOuterG));
+    // Serial.println("//xInnerP: " + String(xInnerP) + ", xInnerI: " + String(xInnerI) + ", xInnerD: " + String(xInnerD));
+    // Serial.println("//yP: " + String(yP) + ", yI: " + String(yI) + ", yD: " + String(yD));
 }
+
+float tempangle;
 
 // Function that reads the inputs to the system and makes convertions
 void readInput() {
@@ -124,34 +149,35 @@ void readInput() {
     #endif
 
     in.joystick.x    = analogRead(pin_joystick_x);          // Reads joystick x-direction
-    in.joystick.y    = 511.5-analogRead(pin_joystick_y);    // Reads joystick y-direction
-    in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
+    in.joystick.y    = 1023-analogRead(pin_joystick_y);     // Reads joystick y-direction
+    // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
     in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.6765; // Read x-potentiometer and convert to meters
-    in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0725; // Read y-potentiometer and convert to meters
-    in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
-    in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
-    in.yDriverAO1    = analogRead(pin_y_driver_AO1);        // Read analog output from driver
-    in.yDriverAO2    = analogRead(pin_y_driver_AO2);        // Read analog output from driver
+    in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
+    // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
+    // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
+    // in.yDriverAO1    = analogRead(pin_y_driver_AO1);        // Read analog output from driver
+    // in.yDriverAO2    = analogRead(pin_y_driver_AO2);        // Read analog output from driver
 
     //Anlge sensor input
     getAngleSensor(&Serial3,&in.angle);
+    tempangle = in.angle;
 
-    // Filter angle input : in -> [ lowpass ] -> [ notch ] -> out
-    in.angle = angleNotchFilter.update(angleLowpass.update(in.angle));
+    // Filter angle input
+    in.angle = angleLowpass.update(in.angle);
 
     // Filter trolley position inputs
     in.posTrolley.x = xPosLowpasss.update(in.posTrolley.x);
     in.posTrolley.y = yPosLowpasss.update(in.posTrolley.y);
 
     // Calculate container position
-    in.posContainer.x = in.posTrolley.x+(sin((-in.angle*PI)/180))*in.posTrolley.y;
-    in.posContainer.y = in.posTrolley.y+(cos((-in.angle*PI)/180))*in.posTrolley.y;
+    in.posContainer.x = in.posTrolley.x+(sin((in.angle*PI)/180))*in.posTrolley.y;
+    in.posContainer.y = (cos((in.angle*PI)/180))*in.posTrolley.y;
 
     // Calculate speed x-axis and y-axis
-    in.velTrolley.x = xTrolleyVelCal.update(in.posContainer.x);
-    in.velTrolley.y = yTrolleyVelCal.update(in.posContainer.y);
+    in.velTrolley.x = xVelLowpass.update(xTrolleyVelCal.update(in.posTrolley.x));
+    in.velTrolley.y = yTrolleyVelCal.update(in.posTrolley.y);
 
     // Calculate contrainer speed
     in.velContainer.x = xContainerVelCal.update(in.posContainer.x);
@@ -173,7 +199,7 @@ void manualControl() {
     // Sends pwm signals to motor driver x
     // if joystick is not in middle position
     if (joystickDeadZone(in.joystick.x) == 1) {
-        analogWrite(pin_pwm_x,pwm.x);
+        analogWrite(pin_pwm_x,map(pwm.x,0,1023,255*0.1,255*0.9));
         digitalWrite(pin_enable_x, HIGH);
     } else {
         analogWrite(pin_pwm_x,127);
@@ -183,7 +209,7 @@ void manualControl() {
     // Sends pwm signals to motor driver y
     // if joystick is not in middle position
     if (joystickDeadZone(in.joystick.y) == 1) {
-        analogWrite(pin_pwm_y,pwm.y);
+        analogWrite(pin_pwm_y,map(pwm.y,0,1023,255*0.1,255*0.9));
         digitalWrite(pin_enable_y, HIGH);
     } else {
         analogWrite(pin_pwm_y,127);
@@ -203,6 +229,13 @@ void automaticControl() {
     // Turn off LED when automatic control is enabled
     digitalWrite(pin_ctrlmode_led, LOW);
 
+    // Serial.print(String(in.angle)+"\t ");
+
+    // in.angle = angleNotchFilter.update(in.angle);
+
+    // Serial.print(String(in.angle)+"\t ");
+    // Serial.print(String(tempangle)+"\t ");
+
     //Define enable value for x-axis motor
     bool enableXmotor = true;
 
@@ -211,12 +244,19 @@ void automaticControl() {
     #endif
 
     // X-controller
-    double xInnerConOut = xInnerController.update(-in.angle*PI/180);
-    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, 0.01)*xOuterG;
-    double xConOut      = xOuterConOut-xInnerConOut;
+    double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
+    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
+    // double xConOut      = xOuterConOut-xInnerConOut;
+    double xConOut      = 0;
+    
+    //double xConOut      =  -xInnerConOut;
+
+    Serial.println(String(millis())+", "+String(in.angle)+", "+String(in.posTrolley.y));
+
+    // Serial.print(String(xConOut)+"\t ");
 
     // Y-controller
-    double yConOut = yController.update(ref.y-in.posTrolley.y);
+    double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
 
     // Make current to pwm conversion. This also removes friction in the system
     uint8_t pwmx = currentToPwmX(xConOut, in.velTrolley.x, &enableXmotor);
@@ -228,10 +268,18 @@ void automaticControl() {
 
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
+
+    // Serial.print(String(in.velTrolley.x)+"\t ");
+
     analogWrite(pin_pwm_x,pwm.x);
+
+    // Serial.println(String(pwm.x));
 
     digitalWrite(pin_enable_y,HIGH);
     analogWrite(pin_pwm_y,pwm.y);
+
+    // Serial.println(String(millis())+", "+String(in.posTrolley.x)+", "+String(in.posTrolley.y)+", "+String(in.angle));
+
 }
 
 // Main loop
@@ -243,9 +291,9 @@ void loop() {
     loopTime = xmicros;
 
     // For manual control
-    if(digitalRead(pin_ctrlmode_sw) == 1) {
-        displayInfo(&display,in,loopFreq,&screenTimer);
+    if(in.ctrlmodeSw == 1) {
         readInput();
+        displayInfo(&display,in,loopFreq,&screenTimer);
         manualControl(); 
     } 
 
@@ -254,6 +302,36 @@ void loop() {
         sampleTimer += Ts;
         readInput();
         automaticControl();
-        getAngleSensor(&Serial3,&in.angle); // Reads angle again to avoid serial buffer overflow
+        
     }
 }
+
+#else 
+
+//
+// PUT SHORT TEST PROGRAMS HERE //
+//
+void setup() {
+    Serial3.begin(9600);  // Communication with head
+    Serial.begin(115200); // Communication with PC
+}
+
+float b[3] = {0.9697, -1.918, 0.9697};
+float a[3] = {1.0000, -1.918, 0.9394};
+
+IIR angleNotchFilter = IIR(a, b);
+
+int timer = 0;
+
+void loop(){
+    if (Serial3.available() > 0){
+        String angleData = Serial3.readStringUntil(*"\n");
+        float angleFloat = angleData.toFloat();
+        if (millis() > timer + 10) {
+            timer += 10;
+            Serial.println(String(angleFloat)+", "+String(angleNotchFilter.update(angleFloat))+", "+String(millis()-timer));
+        }
+    }
+}
+
+#endif
