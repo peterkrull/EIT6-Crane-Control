@@ -70,17 +70,21 @@ length_peak_without_container = [1.10, 0.5, 0.1];
 
 %% Make polyfit and plot %%
 % With container
-p1 = polyfit(length_peak_with_container,freq_peak_with_container,1);
+p1 = polyfit(length_peak_with_container,freq_peak_with_container,1)
 
 x1 = linspace(0,1.4);
 y1 = polyval(p1,x1);
 
+tan_val1 = 3.85-atan(6.5*x1)
+
 figure(3)
-plot(length_peak_with_container,freq_peak_with_container,'o',x1,y1)
+plot(length_peak_with_container,freq_peak_with_container,'o',x1,y1,x1,tan_val1)
 xlabel('Wire length [m]')
 ylabel('Frequency [Hz]')
-legend('Measurements','Regression')
+legend('Measurements','Lin-reg','Atan-fit')
 title('With container')
+text(0.1,2.1,'f(x) = -0.7657 \cdot x + 3.2036')
+text(0.1,2.25,'f(x) = 3.85 - atan(6.5 \cdot x)')
 grid on
 
 x0=0;
@@ -89,21 +93,38 @@ x0=0;
    height=300;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
-exportgraphics(gcf,'fft_without_container.pdf','ContentType','vector')
+exportgraphics(gcf,'length_to_freq_with_container.pdf','ContentType','vector')
 
 % Without container
-p2 = polyfit(length_peak_without_container,freq_peak_without_container,1);
+p2 = polyfit(length_peak_without_container,freq_peak_without_container,1)
 
 x2 = linspace(0,1.4);
 y2 = polyval(p2,x1);
 
+%s = 2.12
+%h = 0.8
+%c = 5
+
+%tan_val2 = atan(-x1*c)*2*h/pi + s + h
+tan_val2 = 2.92-0.51*atan(5*x2)
+
 figure(4)
-plot(length_peak_without_container,freq_peak_without_container,'o',x2,y2)
+plot(length_peak_without_container,freq_peak_without_container,'o',x2,y2,x2,tan_val2)
 xlabel('Wire length [m]')
 ylabel('Frequency [Hz]')
-legend('Measurements','Regression')
+legend('Measurements','Lin-reg','Atan-fit')
 title('Without container')
+text(0.1,1.87,'f(x) = -0.4368 \cdot x + 2.5973')
+text(0.1,1.87,'f(x) = 3.85 - atan(6.5 \cdot x)')
 grid on
+
+x0=0;
+   y0=0;
+   plotwidth=500;
+   height=300;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'length_to_freq_without_container.pdf','ContentType','vector')
 
 
 %% Function used to create frequincy and magnitude axis %%
