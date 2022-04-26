@@ -8,13 +8,14 @@ QauyToShip::QauyToShip(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
-void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed){
+void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning){
     
     //Before start
     if(step==0) {    
         //If at start position
-        if(-0.05<xPos && xPos<0.05 && -0.05<yPos && yPos<0.05){
+        if(-0.05<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
             step=1;
+            *pathRunning=true;
         }
         else{
             Serial.println("Not in start position");
@@ -24,6 +25,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
     //Move to above qauy
     if(step==1){
         ref->x = 0.5;
+        ref->y = 0.00;
         if(0.48>xPos || xPos>0.52){    //If trolley is not above container. pm 2 cm
            failTime = millis();
        } 
@@ -35,8 +37,12 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
 
     //Lower head onto container
     if(step==2){
-        ref->y = 1.21;
-        if(yPos > 1.20)        //Have hit container
+        ref->y = 1.22;
+        if(yPos<1.20){
+            failTime = millis();
+        }
+
+        if(millis() > failTime+200)
             step=3;
     }
 
@@ -55,7 +61,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         if(3.46>xContainer || xContainer>3.54){      //If not within position
             failTime = millis();
         }
-        else if(millis() > failTime + 0.9) {     //This can be changed to something as a function of velocity and position
+        else if(millis() > failTime + 2.0) {     //This can be changed to something as a function of velocity and position
             step=6;   
         }
     }
@@ -72,10 +78,11 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
 
     //Move downto ship and turn off electro magnet.
     if(step==6){
-        ref->y = 1.21;
-        if(yPos > 1.20){
+        ref->y = 1.23;
+        if(yPos > 1.21){
             turnOnElectromagnet(false,LelectroMagnetLED);
             ref->y = 0.3;
+            step=7;
         }
     }
 }
@@ -158,6 +165,7 @@ void ShipToQauy::update(float xPos, float yPos, xy_float *ref, float xContainer,
         if(yPos > 1.20){
             turnOnElectromagnet(false,LelectroMagnetLED);
             ref->y=0.3;        //Move head away from container
+            step=7;
         }
 
     }

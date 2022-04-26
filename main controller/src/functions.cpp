@@ -18,7 +18,8 @@ bool joystickDeadZone(float dataJoystick){
 int endstop(int pwm, float min, float max, float pos){
 
     // Check if endstop is hit
-    if ((pos > max && pwm < 127) || (pos < min && pwm > 127)) {
+    if ((pos > max && pwm > 127) || (pos < min && pwm < 127)) {
+        Serial.println("Software endstop active");
         return 127;
     } else {
         return pwm;
