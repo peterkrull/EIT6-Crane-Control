@@ -231,7 +231,7 @@ void automaticControl() {
 
     // Serial.print(String(in.angle)+"\t ");
 
-    // in.angle = angleNotchFilter.update(in.angle);
+    in.angle = angleNotchFilter.update(in.angle);
 
     // Serial.print(String(in.angle)+"\t ");
     // Serial.print(String(tempangle)+"\t ");
@@ -246,16 +246,10 @@ void automaticControl() {
     // X-controller
     double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
     double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
-    // double xConOut      = xOuterConOut-xInnerConOut;
-    double xConOut      = 0;
+    double xConOut      = xOuterConOut-xInnerConOut;
     
-    //double xConOut      =  -xInnerConOut;
-
     Serial.println(String(millis())+", "+String(in.angle)+", "+String(in.posTrolley.y));
 
-    // Serial.print(String(xConOut)+"\t ");
-
-    // Y-controller
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
 
     // Make current to pwm conversion. This also removes friction in the system
@@ -269,16 +263,11 @@ void automaticControl() {
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
 
-    // Serial.print(String(in.velTrolley.x)+"\t ");
-
     analogWrite(pin_pwm_x,pwm.x);
 
-    // Serial.println(String(pwm.x));
-
     digitalWrite(pin_enable_y,HIGH);
-    analogWrite(pin_pwm_y,pwm.y);
 
-    // Serial.println(String(millis())+", "+String(in.posTrolley.x)+", "+String(in.posTrolley.y)+", "+String(in.angle));
+    analogWrite(pin_pwm_y,pwm.y);
 
 }
 
