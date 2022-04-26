@@ -26,6 +26,7 @@ class ShipToQauy{
     private:
         int step=0;
         uint16_t failTime =0;
+        uint16_t failtimm1=0;
         float *LxRefpoint=0;
         float *LyRefpoint=0;
         int LelectroMagnetLED=0;

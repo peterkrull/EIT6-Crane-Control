@@ -42,8 +42,8 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
     //Move to safety point
     if(step==3){
         *LxRefpoint = 2.41;
-        *LyRefpoint = 0.60;
-        if( yPos < 0.67){        //Hopefully crane will not be waiting for this
+        *LyRefpoint = 0.74;
+        if( yPos < 0.80){        //Hopefully crane will not be waiting for this
             step=4;
         }
     }
@@ -55,15 +55,15 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
             failTime = millis();
         }
         else if(millis() > failTime + 0.9) {     //This can be changed to something as a function of velocity and position
-            step=5;   
+            step=6;   
         }
     }
 
     //Move right above ship
     if(step==5){
-        *LyRefpoint = 1.17;  //3 cm above ship
+        *LyRefpoint = 1.21;  //3 cm above ship
 
-        if(yPos > 1.14 && containerSpeed<0.45){
+        if(yPos > 1.14 && containerSpeed<0.45){     // Less than 6 cm above graound and speed low
             step=6;
         }
 
@@ -74,18 +74,21 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
         *LyRefpoint = 1.21;
         if(yPos > 1.20){
             turnOnElectromagnet(false,LelectroMagnetLED);
+            *LyRefpoint = 0.3;
         }
     }
+}
+
+void QauyToShip::reset(){
+        step=0;
+        failTime =0;
 }
 
 
 //******************* Ship To Qauy*********************
 //*****************************************************
 
-void QauyToShip::reset(){
-        step=0;
-        failTime =0;
-}
+
 
 ShipToQauy::ShipToQauy(float *xRefpoint, float *yRefpoint, int electroMagnetLED){
     LxRefpoint = xRefpoint;
@@ -126,13 +129,37 @@ void ShipToQauy::update(float xPos, float yPos, float xContainer, float containe
     }
 
     if(step==3){
-        *LyRefpoint = 0.60;
-        if(yPos<0.67){
+        *LyRefpoint = 0.74;
+        if(yPos<0.80){
             step=4;
         }
     }
 
-    if(step==4){
+    if(step==4){                    
+        *LxRefpoint = 0.5;
+        if(xPos<3.50-0.23){ //Safty point, Container can be lowered from now on
+            step=5;
+        }
+    }
+
+    if(step==5){
+        *LyRefpoint = 1.15; //3cm above qauy
+        if(xContainer<0.44 || xContainer> 0.54){
+            failTime=millis();
+        }
+
+        if(millis() >failTime + 0.9 && containerSpeed < 0.45){   //Container not swinging for 0.9 s, low wire speed and les than 6 cm above ground
+            step=6;
+        }
+
+    }
+
+    if(step==6){
+        *LyRefpoint = 1.21;
+        if(yPos > 1.20){
+            turnOnElectromagnet(false,LelectroMagnetLED);
+            *LyRefpoint=0.3;        //Move head away from container
+        }
 
     }
 }
