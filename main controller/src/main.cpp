@@ -19,7 +19,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-// #define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define USEPATHALGO      // Uncomment if path algorithm is to be used
 
 // Definitions for screen
 #define SCREEN_WIDTH    128
@@ -66,8 +66,8 @@ uint32_t screenTimer  = 0;
 uint32_t loopTime     = 0;
 
 #ifdef USEPATHALGO
-QauyToShip testQuayToShip = QauyToShip(&ref.x, &ref.y, pin_magnet_led);
-ShipToQauy testShipToQuay = ShipToQauy(&ref.x, &ref.y, pin_magnet_led);
+QauyToShip testQuayToShip = QauyToShip(pin_magnet_led);
+ShipToQauy testShipToQuay = ShipToQauy(pin_magnet_led);
 #endif
 
 // Display object instantiation
@@ -240,7 +240,7 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y, in.posContainer.x, in.velContainerAbs);
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs);
     #endif
 
     // X-controller

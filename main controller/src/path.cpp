@@ -1,15 +1,14 @@
 #include "path.h"
 #include "functions.h"
+#include "dataStructures.h"
 
 #include <Arduino.h>
 
-QauyToShip::QauyToShip(float *xRefpoint, float *yRefpoint, int electroMagnetLED){
-    LxRefpoint = xRefpoint;
-    LyRefpoint = yRefpoint;
+QauyToShip::QauyToShip(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
-void QauyToShip::update(float xPos, float yPos, float xContainer, float containerSpeed){
+void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed){
     
     //Before start
     if(step==0) {    
@@ -24,7 +23,7 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Move to above qauy
     if(step==1){
-        *LxRefpoint = 0.5;
+        ref->x = 0.5;
         if(0.48>xPos || xPos>0.52){    //If trolley is not above container. pm 2 cm
            failTime = millis();
        } 
@@ -36,15 +35,15 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Lower head onto container
     if(step==2){
-        *LyRefpoint = 1.21;
+        ref->y = 1.21;
         if(yPos > 1.20)        //Have hit container
             step=3;
     }
 
     //Move to safety point
     if(step==3){
-        *LxRefpoint = 2.41;
-        *LyRefpoint = 0.74;
+        ref->x = 2.41;
+        ref->y = 0.74;
         if( yPos < 0.80){        //Hopefully crane will not be waiting for this
             step=4;
         }
@@ -52,7 +51,7 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Move above ship
     if(step==4){
-        *LxRefpoint=3.5;
+        ref->x=3.5;
         if(3.46>xContainer || xContainer>3.54){      //If not within position
             failTime = millis();
         }
@@ -63,7 +62,7 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Move right above ship
     if(step==5){
-        *LyRefpoint = 1.21;  //3 cm above ship
+        ref->y = 1.21;  //3 cm above ship
 
         if(yPos > 1.14 && containerSpeed<0.45){     // Less than 6 cm above graound and speed low
             step=6;
@@ -73,10 +72,10 @@ void QauyToShip::update(float xPos, float yPos, float xContainer, float containe
 
     //Move downto ship and turn off electro magnet.
     if(step==6){
-        *LyRefpoint = 1.21;
+        ref->y = 1.21;
         if(yPos > 1.20){
             turnOnElectromagnet(false,LelectroMagnetLED);
-            *LyRefpoint = 0.3;
+            ref->y = 0.3;
         }
     }
 }
