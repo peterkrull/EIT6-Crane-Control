@@ -91,13 +91,11 @@ void QauyToShip::reset(){
 
 
 
-ShipToQauy::ShipToQauy(float *xRefpoint, float *yRefpoint, int electroMagnetLED){
-    LxRefpoint = xRefpoint;
-    LyRefpoint = yRefpoint;
+ShipToQauy::ShipToQauy(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
-void ShipToQauy::update(float xPos, float yPos, float xContainer, float containerSpeed){
+void ShipToQauy::update(float xPos, float yPos, xy_float *ref, float xContainer, float containerSpeed){
     
     //Before start
     if(step==0) {    
@@ -112,7 +110,7 @@ void ShipToQauy::update(float xPos, float yPos, float xContainer, float containe
 
     //Move to above ship
     if(step==1){
-        *LxRefpoint = 0.5;
+        ref->x = 0.5;
         if(3.48>xPos || xPos>3.52){    //If trolley is not above container. pm 2 cm
            failTime = millis();
        } 
@@ -123,28 +121,28 @@ void ShipToQauy::update(float xPos, float yPos, float xContainer, float containe
     }
 
     if(step==2){
-        *LyRefpoint = 1.21;    //Just below top of container
+        ref->y = 1.21;    //Just below top of container
         if(yPos > 1.20) {       //Have hit container
             step=3;
         }
     }
 
     if(step==3){
-        *LyRefpoint = 0.74;
+        ref->y = 0.74;
         if(yPos<0.80){
             step=4;
         }
     }
 
     if(step==4){                    
-        *LxRefpoint = 0.5;
+        ref->x = 0.5;
         if(xPos<3.50-0.23){ //Safty point, Container can be lowered from now on
             step=5;
         }
     }
 
     if(step==5){
-        *LyRefpoint = 1.15; //3cm above qauy
+        ref->y = 1.15; //3cm above qauy
         if(xContainer<0.44 || xContainer> 0.54){
             failTime=millis();
         }
@@ -156,10 +154,10 @@ void ShipToQauy::update(float xPos, float yPos, float xContainer, float containe
     }
 
     if(step==6){
-        *LyRefpoint = 1.21;
+        ref->y = 1.21;
         if(yPos > 1.20){
             turnOnElectromagnet(false,LelectroMagnetLED);
-            *LyRefpoint=0.3;        //Move head away from container
+            ref->y=0.3;        //Move head away from container
         }
 
     }

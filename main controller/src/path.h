@@ -1,8 +1,9 @@
 #include <Arduino.h>
+#include "dataStructures.h"
 
 class QauyToShip{
     public:
-        QauyToShip(float *xRefpoint, float *yRefpoint, int electroMagnetLED);
+        QauyToShip(int electroMagnetLED);
         void update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed);
         void reset();
 
@@ -18,8 +19,8 @@ class QauyToShip{
 
 class ShipToQauy{
     public:
-        ShipToQauy(float *xRefpoint, float *yRefpoint, int electroMagnetLED);
-        void update(float xPos, float yPos, float xContainer, float containerSpeed);
+        ShipToQauy(int electroMagnetLED);
+        void update(float xPos, float yPos, xy_float *ref, float xContainer, float containerSpeed);
         void reset();
 
     private:
