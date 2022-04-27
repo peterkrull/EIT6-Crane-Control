@@ -5,7 +5,7 @@ clc
 s = tf('s');
 run("x non linear model/variables.m")
 
-l_P = 1;
+l_P = InitWireLength;
 b = k_ex/r_x;
 a = M_1*l_P-m_l*l_P;
 G_theta = -s/(s^3*a + s^2*B_x*l_P+s*g*M_1+g*B_x)*b;
@@ -33,25 +33,16 @@ figure(4)
 pzmap(feedback(G_theta,H_theta*D_theta))
 xlim([-1.5 .1])
 ylim([-3.2 3.2])
-export_fig("thetaFBpzMap.pdf")
+export_fig("thetaFBpzMapNoContainer.pdf")
 
 %%
 close all
 xCurrent = 1;
 stepAngle(xCurrent, G_theta, H_theta, D_theta)
-xCurrent = 5;
-stepAngle(xCurrent, G_theta, H_theta, D_theta)
-xCurrent = 7.5;
-stepAngle(xCurrent, G_theta, H_theta, D_theta)
-xCurrent = 8;
-stepAngle(xCurrent, G_theta, H_theta, D_theta)
-xCurrent = 8.5;
-stepAngle(xCurrent, G_theta, H_theta, D_theta)
-xCurrent = 9;
-stepAngle(xCurrent, G_theta, H_theta, D_theta)
+export_fig("innerLoopStep1ANoContainer.pdf")
 xCurrent = 10;
 stepAngle(xCurrent, G_theta, H_theta, D_theta)
-
+export_fig("innerLoopStep10ANoContainer.pdf")
 
 function stepAngle(gain, G_theta, H_theta, D_theta)
     figure

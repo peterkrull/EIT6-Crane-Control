@@ -2,20 +2,31 @@ clear
 close all
 clc
 
+run("variables.m")
+InitWireLength = .1;
+simulation = sim("angleControllerValidation.slx");
 figure(1)
-plotData("10 centimeter")
+plotData("10 centimeter", simulation)
+
 export_fig("AngleTestNoNotch10cm.pdf")
 
+
+
+InitWireLength = .5;
+simulation = sim("angleControllerValidation.slx");
 figure(2)
-plotData("50 centimeter")
+plotData("50 centimeter", simulation)
 export_fig("AngleTestNoNotch50cm.pdf")
 
+
+InitWireLength = 1;
+simulation = sim("angleControllerValidation.slx");
 figure(3)
-plotData("1 meter")
+plotData("1 meter", simulation)
 export_fig("AngleTestNoNotch1m.pdf")
 
 
-function plotData(file)
+function plotData(file, simu)
     data1 = readmatrix(strcat(file, "\test1.csv"));
     data2 = readmatrix(strcat(file, "\test2.csv"));
     data3 = readmatrix(strcat(file, "\test3.csv"));
@@ -28,12 +39,14 @@ function plotData(file)
     hold on
     plot(t2, data2(:,4))
     plot(t3, data3(:,4))
+    plot(simu.tout, simu.Theta1*180/pi)
     hold off
     xlabel("Time [s]")
     ylabel("Angle [deg]")
     xlim([0, 10])
+
     
-    legend("test1", "test2", "test3", "Location","southeast")
+    legend("test1", "test2", "test3", "non linear model","Location","southeast")
 end
 
 function export_fig(name)

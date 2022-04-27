@@ -15,7 +15,7 @@
     cFrictionX=18;
     sFrictionL=50;
     cFrictionL=90;
-    InitWireLength=1.13;
+    InitWireLength=1;
     InitXPos = 0;
     Xref = 1;
 
