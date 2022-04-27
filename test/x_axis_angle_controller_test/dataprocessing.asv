@@ -1,0 +1,15 @@
+clear
+close all
+clc
+
+
+
+
+function plotData
+data1 = readmatrix("50 centimeter\test1.csv");
+t = (data1(:,1)-data1(1,1))/1000;
+
+plot(t, data1(:,4))
+xlabel("Time [s]")
+ylabel("Angle [deg]")
+
