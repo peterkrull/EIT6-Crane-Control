@@ -4,7 +4,7 @@
 class QauyToShip{
     public:
         QauyToShip(int electroMagnetLED);
-        void update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed);
+        void update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning);
         void reset();
 
     private:

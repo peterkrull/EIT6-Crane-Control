@@ -105,8 +105,12 @@ float a[3] = {1.0000, -1.918, 0.9394};
 IIR angleNotchFilter = IIR(a, b);
 #endif
 
+bool pathRunning = false;
+
 // Run on startup
 void setup() {
+
+    
 
     // Set safe default reference values
     #ifndef USEPATHALGO
@@ -214,13 +218,13 @@ void manualControl() {
     digitalWrite(pin_ctrlmode_led,HIGH);
 
     // Calculates actuations based on joystick and trolley position
-    pwm.x = endstop(in.joystick.x, 0.0, 4.00, in.posTrolley.x);
-    pwm.y = endstop(in.joystick.y, 0.0, 1.62, in.posTrolley.y);
+    pwm.x = endstop(map(in.joystick.x,0,1023,255*0.1,255*0.9), 0.10, 3.80, in.posTrolley.x);
+    pwm.y = endstop(map(in.joystick.y,0,1023,255*0.1,255*0.9), -0.01, 1.23, in.posTrolley.y);
     
     // Sends pwm signals to motor driver x
     // if joystick is not in middle position
     if (joystickDeadZone(in.joystick.x) == 1) {
-        analogWrite(pin_pwm_x,map(pwm.x,0,1023,255*0.1,255*0.9));
+        analogWrite(pin_pwm_x,pwm.x);
         digitalWrite(pin_enable_x, HIGH);
     } else {
         analogWrite(pin_pwm_x,127);
@@ -230,7 +234,7 @@ void manualControl() {
     // Sends pwm signals to motor driver y
     // if joystick is not in middle position
     if (joystickDeadZone(in.joystick.y) == 1) {
-        analogWrite(pin_pwm_y,map(pwm.y,0,1023,255*0.1,255*0.9));
+        analogWrite(pin_pwm_y,pwm.y);
         digitalWrite(pin_enable_y, HIGH);
     } else {
         analogWrite(pin_pwm_y,127);
@@ -261,15 +265,17 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs);
+    
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning);
     #endif
 
+    if(pathRunning == true){
     // X-controller
     double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
     double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
     double xConOut      = xOuterConOut-xInnerConOut;
     
-    Serial.println(String(millis())+", "+String(in.angle)+", "+String(in.posTrolley.y));
+    Serial.println(String(millis())+", xPos: "+String(in.posTrolley.x)+", WireLength: "+String(in.posTrolley.y));
 
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
 
@@ -278,8 +284,8 @@ void automaticControl() {
     uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
     
     // Definere software endstops
-    pwm.x = endstop(pwmx, 0.2, 3.80, in.posTrolley.x);
-    pwm.y = endstop(pwmy, 0.0, 1.22, in.posTrolley.y);
+    pwm.x = endstop(pwmx, 0.05, 3.90, in.posTrolley.x);
+    pwm.y = endstop(pwmy, -0.01, 1.24, in.posTrolley.y);
 
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
@@ -289,6 +295,7 @@ void automaticControl() {
     digitalWrite(pin_enable_y,HIGH);
 
     analogWrite(pin_pwm_y,pwm.y);
+    }
 
 }
 
@@ -312,9 +319,12 @@ void loop() {
         sampleTimer += Ts;
         readInput();
         automaticControl();
-        
+        Serial.print("Xref");Serial.println(ref.x);
+        Serial.print("Yref");Serial.println(ref.y);
+        Serial.print("PathRunning");Serial.println(pathRunning);
     }
 }
+
 
 #else 
 
