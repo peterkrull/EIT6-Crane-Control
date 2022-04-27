@@ -46,6 +46,7 @@ class IIR{
         IIR(float a_in[3], float b_in[3]);
         float update(float input);
         float update(float input,uint32_t dtime);
+        void updateParams(float a_in[3], float b_in[3]);
         void restart();
     private:
         float a[3], b[3];
@@ -54,14 +55,22 @@ class IIR{
         float prev_error = 0;
 };
 
+struct frac{
+    float a[3];
+    float b[3];
+};
+
 class NotchFilter{
     public:
-        NotchFilter(float Fc, float Fb,float Ts);
+        NotchFilter(float Fc, float Fb, float Ts);
         float update(float input);
-        float update(float input,uint32_t dtime);
         void restart();
+        void updateFrequency(float Fc);
+        void updateBandwidth(float Fb);
     private:
         IIR iir;
+        frac calcParams(float Fc, float Fb, float Ts);
+        float xFc,xFb,xTs;
 };
 
 class forwardEuler{

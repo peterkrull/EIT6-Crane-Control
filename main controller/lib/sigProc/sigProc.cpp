@@ -148,28 +148,54 @@ float IIR::update(float input){
     return output;
 }
 
+void IIR::updateParams(float a_in[3], float b_in[3]){
+   *a = *a_in;
+   *b = *b_in;
+}
+
 NotchFilter::NotchFilter(float Fc, float Fb,float Ts) {
-    float wc = Fc*2*PI;
-    wc = 2/Ts*tan(wc*Ts/2);
 
-    float wb = Fb*2*PI;
+    xFc = Fc; xFb = Fb; xTs = Ts;
+    frac x = calcParams(Fc,Fb,Ts);
+    iir = IIR(x.a,x.b);
 
-    float a[3]; float b[3];
-
-    float b_temp = wc*wc*Ts*Ts;
-    b[0] =  b_temp + 4;
-    b[1] = (b_temp - 4)*2;
-    b[2] =  b_temp + 4; 
-
-    a[0] = b[0] + 2*wb*Ts;
-    a[1] = b[1];
-    a[2] = b[2] - 2*wb*Ts;
-
-    iir = IIR(a,b);
 }
 
 float NotchFilter::update(float input){
     return iir.update(input);
+}
+
+void NotchFilter::updateFrequency(float Fc){
+    xFc = Fc;
+    frac x = calcParams(xFc,xFb,xTs);
+    iir.updateParams(x.a,x.b);
+}
+
+void NotchFilter::updateBandwidth(float Fb){
+    xFb = Fb;
+    frac x = calcParams(xFc,xFb,xTs);
+    iir.updateParams(x.a,x.b);
+}
+
+frac NotchFilter::calcParams(float Fc, float Fb, float Ts){
+
+    // Pre-warp frequency  
+    float wc = 2/Ts*tan( Fc*2*PI *Ts/2);
+    float wb = Fb*2*PI;
+
+    frac x;
+
+    // Calculate parameters
+    float b_temp = wc*wc*Ts*Ts;
+    x.b[0] =  b_temp + 4;
+    x.b[1] = (b_temp - 4)*2;
+    x.b[2] =  b_temp + 4; 
+
+    x.a[0] = x.b[0] + 2*wb*Ts;
+    x.a[1] = x.b[1];
+    x.a[2] = x.b[2] - 2*wb*Ts;
+
+    return x;
 }
 
 forwardEuler::forwardEuler(){}

@@ -20,6 +20,7 @@
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
 #define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define DYNAMICNOTCHFILTER
 
 // Definitions for screen
 #define SCREEN_WIDTH    128
@@ -78,14 +79,17 @@ low_pass oledLowpass            = low_pass(0.2);            // Lowpass filter ta
 low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
+low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
 forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
 forwardEuler xContainerVelCal   = forwardEuler();           // For calculating container speed in the x-axis
 forwardEuler yContainerVelCal   = forwardEuler();           // For calculating container speed in the y-axis
-// NotchFilter angleNotchFilter    = NotchFilter(2.35,1,Ts);   // Notch filter for removing 2.35 Hz component
 
-low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 
+
+#ifdef DYNAMICNOTCHFILTER
+NotchFilter angleNotchFilter    = NotchFilter(2.35,1,Ts); 
+#else
 
 /*
 H_z =
@@ -99,6 +103,7 @@ float b[3] = {0.9697, -1.918, 0.9697};
 float a[3] = {1.0000, -1.918, 0.9394};
 
 IIR angleNotchFilter = IIR(a, b);
+#endif
 
 bool pathRunning = false;
 
@@ -142,6 +147,15 @@ void setup() {
     // Serial.println("//yP: " + String(yP) + ", yI: " + String(yI) + ", yD: " + String(yD));
 }
 
+// Convert wire length to 2nd pendulum frequency
+float wirelengthToFrequency(float length,bool withContainer){
+    if (withContainer){
+        return 3.85-atan(6.5*length);
+    } else {
+        return 2.92-atan(5*length)*0.51;
+    }
+}
+
 float tempangle;
 
 // Function that reads the inputs to the system and makes convertions
@@ -174,6 +188,13 @@ void readInput() {
     // Filter trolley position inputs
     in.posTrolley.x = xPosLowpasss.update(in.posTrolley.x);
     in.posTrolley.y = yPosLowpasss.update(in.posTrolley.y);
+
+    // Update notch filter parameters
+    #ifdef DYNAMICNOTCHFILTER
+    angleNotchFilter.updateFrequency(wirelengthToFrequency(in.posTrolley.y,in.magnetSw));
+    #endif
+
+    in.angle = angleNotchFilter.update(in.angle);
 
     // Calculate container position
     in.posContainer.x = in.posTrolley.x+(sin((in.angle*PI)/180))*in.posTrolley.y;
