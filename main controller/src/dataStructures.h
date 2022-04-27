@@ -15,7 +15,7 @@ struct xy_pwm {
 };
 
 struct inputs {
-    bool joystickSw, magnetSw, ctrlmodeSw;
+    bool joystickSw, magnetSw, ctrlmodeSw = 1;
     xy_float joystick,posTrolley,velTrolley,posContainer,velContainer;
     float angle,velContainerAbs;
     int xDriverAO1, xDriverAO2, yDriverAO1, yDriverAO2;
