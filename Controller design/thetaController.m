@@ -28,9 +28,10 @@ figure(3)
 rlocus(G_theta*H_theta*D_theta)
 hold on
 pole = rlocus(G_theta*H_theta*D_theta,8);
-
-plot(real(pole), imag(pole), 'rx', 'Markersize', 10)
+plot(real(pole), imag(pole), '^k')
 hold off
+legend("Root locus","Pole placement K_p=8",Location="southwest")
+export_fig("thetaFeedbackRLocus1.pdf")
 
 D_theta = D_theta*8;
 figure(4)

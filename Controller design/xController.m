@@ -22,9 +22,15 @@ rlocus(InnerLoop*G_x)
 export_fig("xLoopRLocus.pdf")
 
 figure(2)
+hold on
 D_x = (1 + s);
 rlocus(InnerLoop*G_x*D_x)
+plot(0,0,'^k',-1.3861,2.9863,'^k',-1.3861,-2.9861,'^k',-0.4560,0,'^k')
 export_fig("xLoopRLocusWController.pdf")
+hold off
+
+pole(InnerLoop*G_x*D_x)
+
 %%
 figure(43)
 simXGain = 1;
