@@ -153,6 +153,8 @@ void IIR::updateParams(float a_in[3], float b_in[3]){
    *b = *b_in;
 }
 
+NotchFilter::NotchFilter() {}
+
 NotchFilter::NotchFilter(float Fc, float Fb,float Ts) {
 
     xFc = Fc; xFb = Fb; xTs = Ts;
@@ -194,6 +196,14 @@ frac NotchFilter::calcParams(float Fc, float Fb, float Ts){
     x.a[0] = x.b[0] + 2*wb*Ts;
     x.a[1] = x.b[1];
     x.a[2] = x.b[2] - 2*wb*Ts;
+
+    // Serial.print(x.b[0]/x.a[0]);Serial.print(", ");
+    // Serial.print(x.b[1]/x.a[0]);Serial.print(", ");
+    // Serial.println(x.b[2]/x.a[0]);
+
+    // Serial.print(x.a[0]/x.a[0]);Serial.print(", ");
+    // Serial.print(x.a[1]/x.a[0]);Serial.print(", ");
+    // Serial.println(x.a[2]/x.a[0]);
 
     return x;
 }

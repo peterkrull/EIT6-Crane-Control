@@ -62,6 +62,7 @@ struct frac{
 
 class NotchFilter{
     public:
+        NotchFilter();
         NotchFilter(float Fc, float Fb, float Ts);
         float update(float input);
         void restart();
