@@ -50,7 +50,7 @@ xticks(0:2:15)
 legend("Linear model", "Non linear model", "Location", "south east")
 xlabel("Time [s]")
 ylabel("Trolley position [m]")
-%export_fig("xControllerStep1.pdf")
+export_fig("xControllerStep1.pdf")
 
 %%
 
@@ -72,7 +72,7 @@ xticks(0:2:15)
 %legend("Linear model", "Non linear model", "Location", "south east")
 xlabel("Time [s]")
 ylabel("Trolley position [m]")
-%export_fig("xControllerStep2.pdf")
+export_fig("xControllerStep2.pdf")
 
 
 figure(3504)
@@ -87,7 +87,7 @@ xticks(0:2:15)
 %legend("Linear model", "Non linear model", "Location", "south east")
 xlabel("Time [s]")
 ylabel("Container position [m]")
-%export_fig("xControllerStep2.pdf")
+export_fig("xContainerControllerStep2.pdf")
 
 
 
