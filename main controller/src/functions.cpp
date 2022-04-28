@@ -149,3 +149,18 @@ void getAngleSensor(HardwareSerial *serial, float *angle){
         *angle = angleData.toFloat();
     }
 }
+
+fastReader::fastReader(HardwareSerial *serial){
+    intSerial = serial;
+}
+
+bool fastReader::getFloatln(float *output){
+    while (intSerial->available() > 0){
+        buffer += (char)intSerial->read();
+        if (buffer.indexOf("\n") > -1){
+            *output = buffer.substring(0,buffer.indexOf("\n")-1).toFloat();
+            buffer = "";
+            return true;
+        } else {return false;}
+    }
+}

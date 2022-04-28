@@ -12,5 +12,13 @@ void turnOnElectromagnet(bool status, int LEDPin);
 void getSerialReference(HardwareSerial *serial,xy_float *reference);
 void getAngleSensor(HardwareSerial *serial, float *angle);
 
+class fastReader{
+    public:
+        fastReader(HardwareSerial *serial);
+        bool getFloatln(float *output);
+    private:
+        HardwareSerial *intSerial;
+        String buffer;
+};
 
 #endif
