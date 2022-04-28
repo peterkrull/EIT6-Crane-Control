@@ -13,13 +13,12 @@
 #include "displayHandler.h"
 
 #define mainprogram
-
 #ifdef mainprogram
 
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-#define USEPATHALGO      // Uncomment if path algorithm is to be used
+//#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen
@@ -53,6 +52,8 @@ PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0.05, false);
 // PID controller for y-axis
 PID yController = PID(yP,yI,yD,yLP);
 
+fastReader reader = fastReader(&Serial3);
+
 // Loop sample period
 uint32_t Ts = 1e6/SAMPLEHZ;
 
@@ -85,10 +86,8 @@ forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating t
 forwardEuler xContainerVelCal   = forwardEuler();           // For calculating container speed in the x-axis
 forwardEuler yContainerVelCal   = forwardEuler();           // For calculating container speed in the y-axis
 
-
-
 #ifdef DYNAMICNOTCHFILTER
-NotchFilter angleNotchFilter    = NotchFilter(2.35,1,Ts); 
+NotchFilter angleNotchFilter; 
 #else
 
 /*
@@ -99,18 +98,18 @@ H_z =
      z^2 - 1.918 z + 0.9394
 */
 
-float b[3] = {0.9697, -1.918, 0.9697};
-float a[3] = {1.0000, -1.918, 0.9394};
+
+float b[3] = {0.9412, -1.862, 0.9412};
+float a[3] = {1.0000, -1.862, 0.8824};
 
 IIR angleNotchFilter = IIR(a, b);
+
 #endif
 
 bool pathRunning = false;
 
 // Run on startup
 void setup() {
-
-    
 
     // Set safe default reference values
     #ifndef USEPATHALGO
@@ -138,13 +137,15 @@ void setup() {
     Serial3.begin(9600);  // Communication with head
     Serial.begin(115200); // Communication with PC
 
+    
+    #ifdef DYNAMICNOTCHFILTER
+    // Initial values
+    angleNotchFilter = NotchFilter(2.35,2,Ts/1e6);
+    #endif
+
     // Initialize Oled display
     initializeDisplay(&display);
 
-    // Print controller values
-    // Serial.println("//xOuterZ: " + String(xOuterZ) + ", xOuterP: " + String(xOuterP) + ", xOuterG: " + String(xOuterG));
-    // Serial.println("//xInnerP: " + String(xInnerP) + ", xInnerI: " + String(xInnerI) + ", xInnerD: " + String(xInnerD));
-    // Serial.println("//yP: " + String(yP) + ", yI: " + String(yI) + ", yD: " + String(yD));
 }
 
 // Convert wire length to 2nd pendulum frequency
@@ -152,19 +153,38 @@ float wirelengthToFrequency(float length,bool withContainer){
     if (withContainer){
         return 3.85-atan(6.5*length);
     } else {
-        return 2.92-atan(5*length)*0.51;
+        return 2.85-atan(5*length)*0.51;
     }
 }
 
-float tempangle;
+// Convert wire length to 2nd pendulum frequency
+float wirelengthToFrequency2(float length){
+    return 0.1702*length + 1.9084;
+}
+
+
+float tempAngle;
 
 // Function that reads the inputs to the system and makes convertions
 void readInput() {
 
+    in.angle = angleLowpass.update(in.angle);
+
+    // Update notch filter parameters
+    #ifdef DYNAMICNOTCHFILTER
+    angleNotchFilter.updateFrequency(wirelengthToFrequency2(in.posTrolley.y));
+    #endif
+
+    if (in.magnetSw) {
+        angleNotchFilter.update(in.angle);
+    } else {
+        in.angle = angleNotchFilter.update(in.angle);
+    }
+
     // Fetches reference point from serial readout
     #ifndef USEPATHALGO
     getSerialReference(&Serial,&ref);
-    #endif
+    #endif    
 
     in.joystick.x    = analogRead(pin_joystick_x);          // Reads joystick x-direction
     in.joystick.y    = 1023-analogRead(pin_joystick_y);     // Reads joystick y-direction
@@ -177,24 +197,10 @@ void readInput() {
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
     // in.yDriverAO1    = analogRead(pin_y_driver_AO1);        // Read analog output from driver
     // in.yDriverAO2    = analogRead(pin_y_driver_AO2);        // Read analog output from driver
-
-    //Anlge sensor input
-    getAngleSensor(&Serial3,&in.angle);
-    tempangle = in.angle;
-
-    // Filter angle input
-    in.angle = angleLowpass.update(in.angle);
-
+    
     // Filter trolley position inputs
     in.posTrolley.x = xPosLowpasss.update(in.posTrolley.x);
     in.posTrolley.y = yPosLowpasss.update(in.posTrolley.y);
-
-    // Update notch filter parameters
-    #ifdef DYNAMICNOTCHFILTER
-    angleNotchFilter.updateFrequency(wirelengthToFrequency(in.posTrolley.y,in.magnetSw));
-    #endif
-
-    in.angle = angleNotchFilter.update(in.angle);
 
     // Calculate container position
     in.posContainer.x = in.posTrolley.x+(sin((in.angle*PI)/180))*in.posTrolley.y;
@@ -254,29 +260,18 @@ void automaticControl() {
     // Turn off LED when automatic control is enabled
     digitalWrite(pin_ctrlmode_led, LOW);
 
-    // Serial.print(String(in.angle)+"\t ");
-
-    in.angle = angleNotchFilter.update(in.angle);
-
-    // Serial.print(String(in.angle)+"\t ");
-    // Serial.print(String(tempangle)+"\t ");
-
     //Define enable value for x-axis motor
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    
     testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning);
     #endif
 
-    if(pathRunning == true){
     // X-controller
     double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
     double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
     double xConOut      = xOuterConOut-xInnerConOut;
     
-    Serial.println(String(millis())+", xPos: "+String(in.posTrolley.x)+", WireLength: "+String(in.posTrolley.y));
-
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
 
     // Make current to pwm conversion. This also removes friction in the system
@@ -289,15 +284,14 @@ void automaticControl() {
 
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
-
     analogWrite(pin_pwm_x,pwm.x);
 
     digitalWrite(pin_enable_y,HIGH);
-
     analogWrite(pin_pwm_y,pwm.y);
-    }
-
+    
 }
+
+uint32_t start_time = 0;
 
 // Main loop
 void loop() {
@@ -307,50 +301,77 @@ void loop() {
     uint16_t loopFreq = 1e6/oledLowpass.update(xmicros - loopTime);
     loopTime = xmicros;
 
-    // For manual control
-    if(in.ctrlmodeSw == 1) {
-        readInput();
-        displayInfo(&display,in,loopFreq,&screenTimer);
-        manualControl(); 
-    } 
+    if (reader.getFloatln(&in.angle)){
+        tempAngle = in.angle;
+    }
 
-    // For automatic control
-    else if(micros() > Ts + sampleTimer){
-        sampleTimer += Ts;
+    // Run at 1/Ts Hz    
+    uint32_t xtime = micros();
+    if(xtime > Ts + sampleTimer){
+
         readInput();
-        automaticControl();
-        Serial.print("Xref");Serial.println(ref.x);
-        Serial.print("Yref");Serial.println(ref.y);
-        Serial.print("PathRunning");Serial.println(pathRunning);
+        
+        sampleTimer += Ts;
+
+        // For automatic control
+        if (in.ctrlmodeSw == 0){
+
+            if(start_time == 0){
+                start_time = millis();
+                ref.x = 10;
+            }
+
+            if(millis()-start_time>=500){
+                ref.x = 0;
+            }
+
+            automaticControl();
+            Serial.println(String(xtime)+", "+String(tempAngle)+", "+String(in.angle));
+
+        } else {
+            displayInfo(&display,in,loopFreq,&screenTimer);
+            manualControl(); 
+            start_time = 0;
+        }
+
+        // Serial.println(String(tempAngle)+", "+String(in.angle));
     }
 }
 
 
 #else 
 
+// NotchFilter angleNotchFilter = NotchFilter(2.45,2,0.01);
+
 //
 // PUT SHORT TEST PROGRAMS HERE //
 //
+
+NotchFilter angleNotchFilter;
+
 void setup() {
+    
     Serial3.begin(9600);  // Communication with head
     Serial.begin(115200); // Communication with PC
+    Serial.println("INITIALIZED");
+
+    angleNotchFilter = NotchFilter(2.35,2,0.01);
 }
 
-float b[3] = {0.9697, -1.918, 0.9697};
-float a[3] = {1.0000, -1.918, 0.9394};
+uint32_t timer = 0;
+float angleFloat;
 
-IIR angleNotchFilter = IIR(a, b);
+String buffer = "";
 
-int timer = 0;
+low_pass lp = low_pass(0.02);
+
+fastReader reader = fastReader(&Serial3);
 
 void loop(){
-    if (Serial3.available() > 0){
-        String angleData = Serial3.readStringUntil(*"\n");
-        float angleFloat = angleData.toFloat();
-        if (millis() > timer + 10) {
-            timer += 10;
-            Serial.println(String(angleFloat)+", "+String(angleNotchFilter.update(angleFloat))+", "+String(millis()-timer));
-        }
+    reader.getFloatln(&angleFloat);
+    if (micros() >= timer + 10000) {
+        Serial.println(String(angleFloat)+", "+String(lp.update(angleNotchFilter.update(angleFloat)))+", "+String(float(micros()-timer)/1000.0));
+        timer = micros() + 10000;
     }
 }
 
