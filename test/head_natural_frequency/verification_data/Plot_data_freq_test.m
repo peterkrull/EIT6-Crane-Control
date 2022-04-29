@@ -71,8 +71,8 @@ title('With container 110 cm')
 
 x0=0;
    y0=0;
-   plotwidth=5000;
-   height=3000;
+   plotwidth=600;
+   height=500;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
 exportgraphics(gcf,'angle_with_container.pdf','ContentType','vector')
@@ -129,8 +129,67 @@ title('Without container 110 cm')
 
 x0=0;
    y0=0;
-   plotwidth=5000;
-   height=3000;
+   plotwidth=600;
+   height=500;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
 exportgraphics(gcf,'angle_without_container.pdf','ContentType','vector')
+
+%% Make plots for rapport %%
+
+figure(3)
+subplot(3,2,1)
+plot((data2_container.Var1/t_fix)-184.2,data2_container.Var2,(data2_container.Var1/t_fix)-184.2,data2_container.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('With container 30 cm')
+
+subplot(3,2,2)
+plot((data2.Var1/t_fix)-613.8,data2.Var2,(data2.Var1/t_fix)-613.8,data2.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('Without container 30 cm')
+
+subplot(3,2,3)
+plot((data4_container.Var1/t_fix)-274.8,data4_container.Var2,(data4_container.Var1/t_fix)-274.8,data4_container.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('With container 70 cm')
+
+subplot(3,2,4)
+plot((data4.Var1/t_fix)-524.1,data4.Var2,(data4.Var1/t_fix)-524.1,data4.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('Without container 70 cm')
+
+subplot(3,2,5)
+plot((data6_container.Var1/t_fix)-371,data6_container.Var2,(data6_container.Var1/t_fix)-371,data6_container.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('With container 110 cm')
+
+subplot(3,2,6)
+plot((data6.Var1/t_fix)-458.8,data6.Var2,(data6.Var1/t_fix)-458.8,data6.Var3)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+title('Without container 110 cm')
+
+x0=0;
+   y0=0;
+   plotwidth=600;
+   height=500;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'angle_test.pdf','ContentType','vector')
