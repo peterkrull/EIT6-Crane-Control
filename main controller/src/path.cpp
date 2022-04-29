@@ -42,7 +42,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
             failTime = millis();
         }
 
-        if(millis() > failTime+200)
+        if(millis() > failTime+300)
             step=3;
     }
 
@@ -58,26 +58,17 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
     //Move above ship
     if(step==4){
         ref->x=3.5;
-        if(3.46>xContainer || xContainer>3.54){      //If not within position
+        if(3.46>xContainer || xContainer>3.54 || 3.46>xPos ||xPos>3.54){      //If not within position
             failTime = millis();
         }
         else if(millis() > failTime + 2.0) {     //This can be changed to something as a function of velocity and position
-            step=6;   
+            step=5;   
         }
     }
 
-    //Move right above ship
-    if(step==5){
-        ref->y = 1.21;  //3 cm above ship
-
-        if(yPos > 1.14 && containerSpeed<0.45){     // Less than 6 cm above graound and speed low
-            step=6;
-        }
-
-    }
 
     //Move downto ship and turn off electro magnet.
-    if(step==6){
+    if(step==5){
         ref->y = 1.23;
         if(yPos > 1.21){
             turnOnElectromagnet(false,LelectroMagnetLED);

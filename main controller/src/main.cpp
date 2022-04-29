@@ -31,7 +31,7 @@
 #define xOuterP 1
 #define xOuterI 0
 #define xOuterD 1
-#define xOuterGain 9
+#define xOuterGain 7.5
 
 #define xInnerP 0.25
 #define xInnerI 0.0
@@ -80,6 +80,7 @@ low_pass oledLowpass            = low_pass(0.2);            // Lowpass filter ta
 low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
+low_pass angleHighpass          = low_pass(2);
 low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
 forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
@@ -169,6 +170,7 @@ float tempAngle;
 void readInput() {
 
     in.angle = angleLowpass.update(in.angle);
+    in.angle = in.angle - angleHighpass.update(in.angle);
 
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
