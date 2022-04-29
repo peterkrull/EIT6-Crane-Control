@@ -28,10 +28,10 @@
 #define SCREEN_ADDRESS  0x3C
 
 // x-controller variables
-#define xOuterP 1.2
+#define xOuterP 1
 #define xOuterI 0
-#define xOuterD 1.8
-#define xOuterGain 9
+#define xOuterD 1
+#define xOuterGain 7.5
 
 #define xInnerP 0.25
 #define xInnerI 0.0
@@ -172,14 +172,17 @@ void readInput() {
 
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
-    angleNotchFilter.updateFrequency(wirelengthToFrequency2(in.posTrolley.y));
+    angleNotchFilter.updateFrequency(wirelengthToFrequency(in.posTrolley.y,in.magnetSw));
     #endif
 
+    /*
     if (in.magnetSw) {
         angleNotchFilter.update(in.angle);
     } else {
         in.angle = angleNotchFilter.update(in.angle);
-    }
+    }*/
+
+    in.angle = angleNotchFilter.update(in.angle);
 
     // Fetches reference point from serial readout
     #ifndef USEPATHALGO
@@ -191,7 +194,7 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.6765; // Read x-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.6765+0.33; // Read x-potentiometer and convert to meters
     in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
@@ -267,9 +270,20 @@ void automaticControl() {
     testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning);
     #endif
 
+    float gainL0 = 2;
+    bool nonZeroAngle = 1;
     // X-controller
-    double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
-    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
+    if(in.posTrolley.y < .06){ 
+        gainL0 = 8;
+        nonZeroAngle = 0;
+    }
+    else{
+         gainL0 = 1;
+         nonZeroAngle = 1;
+    };
+
+    double xInnerConOut = xInnerController.update(-in.angle*PI/180*nonZeroAngle,Ts)*xInnerGain;
+    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain*gainL0;
     double xConOut      = xOuterConOut-xInnerConOut;
     
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
@@ -279,7 +293,7 @@ void automaticControl() {
     uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
     
     // Definere software endstops
-    pwm.x = endstop(pwmx, 0.05, 3.90, in.posTrolley.x);
+    pwm.x = endstop(pwmx, 0.50, 3.50, in.posTrolley.x);
     pwm.y = endstop(pwmy, -0.01, 1.24, in.posTrolley.y);
 
     // Outputs the PWM signal
@@ -315,18 +329,8 @@ void loop() {
 
         // For automatic control
         if (in.ctrlmodeSw == 0){
-
-            if(start_time == 0){
-                start_time = millis();
-                ref.x = 10;
-            }
-
-            if(millis()-start_time>=500){
-                ref.x = 0;
-            }
-
             automaticControl();
-            Serial.println(String(xtime)+", "+String(tempAngle)+", "+String(in.angle));
+            Serial.println(String(xtime)+ ", " + String(in.posTrolley.x)+ ", " + String(in.posTrolley.y) + "," +String(in.angle) +  ","+ String(ref.x) );
 
         } else {
             displayInfo(&display,in,loopFreq,&screenTimer);

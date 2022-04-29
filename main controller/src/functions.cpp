@@ -77,7 +77,7 @@ uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
             current = 0;
             *enableXMotor = false;
         } else if (xSpeed < 0) {
-            current = current - 2.24; // Columb friction current
+            current = current - 2.26; // Columb friction current
             *enableXMotor = true;
         } else if (xSpeed > 0) {
             current = current + 2.24; // Columb friction current
