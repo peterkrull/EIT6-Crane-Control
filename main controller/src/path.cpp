@@ -25,7 +25,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
     //Move to above qauy
     if(step==1){
         ref->x = 0.5;
-        ref->y = 0.00;
+        ref->y = 0.02;
         if(0.48>xPos || xPos>0.52){    //If trolley is not above container. pm 2 cm
            failTime = millis();
        } 
@@ -37,8 +37,8 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
 
     //Lower head onto container
     if(step==2){
-        ref->y = 1.22;
-        if(yPos<1.20){
+        ref->y = 1.23;
+        if(yPos<1.21){
             failTime = millis();
         }
 
