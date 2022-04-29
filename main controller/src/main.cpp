@@ -80,7 +80,7 @@ low_pass oledLowpass            = low_pass(0.2);            // Lowpass filter ta
 low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
-low_pass angleHighpass          = low_pass(2);
+low_pass angleHighpass          = low_pass(1);
 low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
 forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis

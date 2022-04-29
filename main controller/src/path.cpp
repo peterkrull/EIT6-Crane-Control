@@ -10,6 +10,7 @@ QauyToShip::QauyToShip(int electroMagnetLED){
 
 void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning){
     
+    
     //Before start
     if(step==0) {    
         //If at start position
@@ -20,6 +21,9 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         else{
             Serial.println("Not in start position");
         }
+        ref->x=2.41;
+        ref->y=0.75;
+        step=3;
     }
 
     //Move to above qauy
@@ -60,8 +64,9 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         ref->x=3.5;
         if(3.46>xContainer || xContainer>3.54 || 3.46>xPos ||xPos>3.54){      //If not within position
             failTime = millis();
+            Serial.print("FAILING STEP 4");
         }
-        else if(millis() > failTime + 2.0) {     //This can be changed to something as a function of velocity and position
+        else if(millis() > failTime + 2000) {     //This can be changed to something as a function of velocity and position
             step=5;   
         }
     }
