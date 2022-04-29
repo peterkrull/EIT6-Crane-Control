@@ -31,7 +31,7 @@
 #define xOuterP 1
 #define xOuterI 0
 #define xOuterD 1
-#define xOuterGain 9
+#define xOuterGain 7.5
 
 #define xInnerP 0.25
 #define xInnerI 0.0
