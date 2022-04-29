@@ -91,13 +91,14 @@ y1 = polyval(p1,x1);
 tan_val1 = 3.85-atan(6.5*x1)
 
 figure(3)
-plot(length_peak_with_container,freq_peak_with_container,'o',x1,y1,x1,tan_val1)
+plot(length_peak_with_container,freq_peak_with_container,'o',x1,tan_val1)
+ylim([1.8 4])
 xlabel('Wire length [m]')
 ylabel('Frequency [Hz]')
-legend('Measurements','Lin-reg','Atan-fit')
+legend('Measurements','Atan-fit')
 title('With container')
-text(0.1,2.1-0.45,'f(x) = -0.7657 \cdot x + 3.2036')
-text(0.1,2.25-0.45,'f(x) = 3.85 - atan(6.5 \cdot x)')
+%text(0.1,2.1-0.45,'f(x) = -0.7657 \cdot x + 3.2036')
+text(0.1,2.4-0.45,'f(x) = 3.85 - atan(6.5 \cdot x)')
 grid on
 
 x0=0;
@@ -122,12 +123,13 @@ y2 = polyval(p2,x1);
 tan_val2 = 2.85-0.51*atan(5*x2)
 
 figure(4)
-plot(length_peak_without_container,freq_peak_without_container,'o',x2,y2,x2,tan_val2)
+plot(length_peak_without_container,freq_peak_without_container,'o',x2,tan_val2)
+ylim([1.8 4])
 xlabel('Wire length [m]')
 ylabel('Frequency [Hz]')
-legend('Measurements','Lin-reg','Atan-fit')
+legend('Measurements','Atan-fit')
 title('Without container')
-text(0.1,1.87,'f(x) = -0.4368 \cdot x + 2.5973')
+%text(0.1,1.87,'f(x) = -0.4368 \cdot x + 2.5973')
 text(0.1,1.955,'f(x) = 2.85 - 0.51 \cdot atan(5 \cdot x)')
 grid on
 
