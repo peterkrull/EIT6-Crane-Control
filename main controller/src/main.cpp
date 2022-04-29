@@ -18,7 +18,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-//#define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen
@@ -194,7 +194,7 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-.35; // Read x-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-.385; // Read x-potentiometer and convert to meters
     in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
@@ -293,7 +293,7 @@ void automaticControl() {
     uint8_t pwmy = currentToPwmY(yConOut, in.velTrolley.y, in.magnetSw);
     
     // Definere software endstops
-    pwm.x = endstop(pwmx, 0.5, 3.95, in.posTrolley.x);
+    pwm.x = endstop(pwmx, 0.1, 3.95, in.posTrolley.x);
     pwm.y = endstop(pwmy, -0.01, 1.24, in.posTrolley.y);
 
     // Outputs the PWM signal
