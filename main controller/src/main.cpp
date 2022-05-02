@@ -80,7 +80,7 @@ low_pass oledLowpass            = low_pass(0.2);            // Lowpass filter ta
 low_pass xPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass yPosLowpasss           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
 low_pass angleLowpass           = low_pass(0.03);           // Lowpass filter tau = 30 ms.
-low_pass angleHighpass          = low_pass(2);
+low_pass angleHighpass          = low_pass(1);
 low_pass xVelLowpass           = low_pass(0.1);           // Lowpass filter tau = 30 ms.
 forwardEuler xTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the y-axis
 forwardEuler yTrolleyVelCal     = forwardEuler();           // For calculating trolley speed in the x-axis
@@ -108,6 +108,7 @@ IIR angleNotchFilter = IIR(a, b);
 #endif
 
 bool pathRunning = false;
+bool InnnerLoopOn = false;
 
 // Run on startup
 void setup() {
@@ -229,7 +230,7 @@ void manualControl() {
     digitalWrite(pin_ctrlmode_led,HIGH);
 
     // Calculates actuations based on joystick and trolley position
-    pwm.x = endstop(map(in.joystick.x,0,1023,255*0.1,255*0.9), 0.10, 3.80, in.posTrolley.x);
+    pwm.x = endstop(map(in.joystick.x,0,1023,255*0.1,255*0.9), 0.10, 3.95, in.posTrolley.x);
     pwm.y = endstop(map(in.joystick.y,0,1023,255*0.1,255*0.9), -0.01, 1.23, in.posTrolley.y);
     
     // Sends pwm signals to motor driver x
@@ -269,13 +270,14 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning);
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
+    //testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
     #endif
 
     float gainL0 = 2;
     bool nonZeroAngle = 1;
     // X-controller
-    if(in.posTrolley.y < .06){ 
+    if(InnnerLoopOn==false){ 
         gainL0 = 8;
         nonZeroAngle = 0;
     }
