@@ -18,7 +18,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-#define USEPATHALGO      // Uncomment if path algorithm is to be used
+//#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen
@@ -31,7 +31,7 @@
 #define xOuterP 1
 #define xOuterI 0
 #define xOuterD 1
-#define xOuterGain 7.5
+#define xOuterGain 5
 
 #define xInnerP 0.25
 #define xInnerI 0.0
@@ -108,7 +108,7 @@ IIR angleNotchFilter = IIR(a, b);
 #endif
 
 bool pathRunning = false;
-bool InnnerLoopOn = false;
+bool InnnerLoopOn = true;
 
 // Run on startup
 void setup() {

@@ -3,10 +3,10 @@ close all
 clc
 
 
-testData = readmatrix('testOfControllers\29-4-2022\gain = 7.5\1 meter\test1.csv', 'CommentStyle', '//');
+testData = readmatrix('testOfControllers\2-5-2022\l75s3t1.txt', 'CommentStyle', '//');
 
 
-%plotData(testData, "test 1")
+plotData(testData, "test 1")
 
 %plotData(readmatrix('testOfControllers\29-4-2022\gain = 7.5\1 meter\test2.csv', 'CommentStyle', '//'), "test 2")
 
@@ -39,13 +39,13 @@ function plotData(input, test)
     plot(testTime, testX + sin(testAngle*pi/180).*testY)
     errorBand = .064;
     errorBandValue=stepSize*errorBand;
-    yline(Xref + errorBandValue)
-    yline(Xref - errorBandValue)
+    yline(Xref + .05)
+    yline(Xref - .05)
     
     xlabel("Time [s]")
     ylabel("Position [m]")
     title(test)
-    export_fig(strcat("XcontrollerTestFinalGain", test, ".pdf"))
+   % export_fig(strcat("XcontrollerTestFinalGain", test, ".pdf"))
 
     figure
     plot(testTime, testAngle)

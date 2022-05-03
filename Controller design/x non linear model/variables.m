@@ -18,6 +18,6 @@
     InitWireLength=1;
     InitXPos = 0;
     Xref = 1;
-
+    simXGain = 7.5;
 
 
