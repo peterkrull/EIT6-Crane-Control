@@ -166,9 +166,9 @@ x0=0;
 exportgraphics(gcf,'Plots_velocity_test_main.pdf','ContentType','vector')
 
 figure(4)
-plot(data6.Var1/timeFix-28, current_demanded_6, data6.Var1/timeFix-28, current_actual_6);
+plot(data6.Var1/timeFix-28-0.5, current_demanded_6, data6.Var1/timeFix-28-0.5, current_actual_6);
 ylim([-11 11])
-xlim([0 3])
+xlim([0 2.5])
 title('Velocity limit 0.6 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
@@ -182,9 +182,9 @@ x0=0;
 exportgraphics(gcf,'Plots_velocity_test_main_1.pdf','ContentType','vector')
 
 figure(5)
-plot(data7.Var1/timeFix-32.7, current_demanded_7, data7.Var1/timeFix-32.7, current_actual_7);
+plot(data7.Var1/timeFix-32.7-0.5, current_demanded_7, data7.Var1/timeFix-32.7-0.5, current_actual_7);
 ylim([-11 11])
-xlim([0 3])
+xlim([0 2.5])
 title('Velocity limit 0.7 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
