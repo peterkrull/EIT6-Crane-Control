@@ -31,8 +31,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         *innnerLoopOn = false;
         if(0.48>xPos || xPos>0.52){    //If trolley is not above container. pm 2 cm
            failTime = millis();
-       } 
-       else if(millis() > failTime+300){ //If head has been above container for 0.5s 
+       } else if(millis() > failTime+300){ //If head has been above container for 0.5s 
            step = 2;
            turnOnElectromagnet(true,LelectroMagnetLED);
        }
@@ -44,10 +43,9 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         *innnerLoopOn = false;
         if(yPos<1.21){
             failTime = millis();
-        }
-
-        if(millis() > failTime+400)
+        } else if (millis() > failTime+400) {
             step=4;
+        }
     }
 
     //Move to safety point
@@ -55,7 +53,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         ref->x = 2.41;
         ref->y = 0.74;
         *innnerLoopOn = true;
-        if( yPos < 0.80){        //Hopefully crane will not be waiting for this
+        if ( yPos < 0.80) {        //Hopefully crane will not be waiting for this
             step=4;
         }
     }
@@ -68,8 +66,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         if(3.46>xContainer || xContainer>3.54 || 3.46>xPos ||xPos>3.54){      //If not within position
             failTime = millis();
             Serial.print("//FAILING STEP 4 criteria ");
-        }
-        else if(millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
+        } else if(millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
             step=5;   
         }
     }

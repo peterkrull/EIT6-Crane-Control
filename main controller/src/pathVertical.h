@@ -4,7 +4,7 @@
 class QauyToShipV{
     public:
         QauyToShipV(int electroMagnetLED);
-        void update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning, bool *InnnerLoopOn);
+        int update(float xPos, float yPos, xy_float  *ref , float xContainer, float containerSpeed, bool *pathRunning, bool *InnnerLoopOn);
         void reset();
 
     private:
