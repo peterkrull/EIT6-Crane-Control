@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-QauyToShipV::QauyToShip(int electroMagnetLED){
+QauyToShipV::QauyToShipV(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
@@ -97,7 +97,7 @@ void QauyToShipV::reset(){
 
 
 
-ShipToQauyV::ShipToQauy(int electroMagnetLED){
+ShipToQauyV::ShipToQauyV(int electroMagnetLED){
     LelectroMagnetLED = electroMagnetLED;
 }
 
