@@ -31,7 +31,7 @@
 #define xOuterP 1
 #define xOuterI 0
 #define xOuterD 1
-#define xOuterGain 5
+#define xOuterGain 7.5
 
 #define xInnerP 0.25
 #define xInnerI 0.0
@@ -360,7 +360,7 @@ void loop() {
             manualControl(); 
             start_time = 0;
             AutoON=false;
-            Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
+            // Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
         }
 
         // Serial.println(String(tempAngle)+", "+String(in.angle));
