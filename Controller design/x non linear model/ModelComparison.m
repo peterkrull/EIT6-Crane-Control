@@ -1,17 +1,35 @@
 clear
 close all
 clc
-run("variables.m");
+%run("variables.m");
+%simXGain = 5;
 
-testData = readmatrix('testOfControllers\2nd_pendulum_10cm.csv', 'CommentStyle', '//');
-testTime = (testData(:,1)-testData(1,1))/1000 + 1;
+testData = readmatrix('testOfControllers\DCoffsetTest2.txt', 'CommentStyle', '//');
+testData = readmatrix('testOfControllers\29-4-2022\gain = 7.5\1 meter\test1.csv', 'CommentStyle', '//');
+testTime = (testData(:,1)-testData(1,1))/1000000;
 testX = testData(:,2);
+testY = testData(:,3);
 testAngle = testData(:,4);
+testXRef = testData(:,5);
 
-Xref = 3;
+Xref = testXRef(1);
+stepSize = abs(Xref-testX(1));
 %InitXPos = testX(1);
 
 %simulation = sim("CraneModel.slx");
+
+figure(23597)
+plot(testTime, testXRef)
+ylim([0 4])
+
+figure(2359899)
+plot(testTime, testY)
+
+figure(2358)
+plot(testTime, testAngle)
+
+figure(346)
+plot(testTime, testX)
 
 
 %%
@@ -26,14 +44,14 @@ grid on
 figure(2)
 title("angle")
 plot(testTime, testAngle)
-ylim([-60 60])
+grid on
 
 figure(3)
 title("Container position")
-plot(testTime, testX+sin(testAngle*pi/180)*1.13)
+plot(testTime, testX+sin(testAngle*pi/180).*testY)
 grid on
 errorBand = .064;
-errorBandValue=(Xref(1)-testX(1))*errorBand;
+errorBandValue=stepSize*errorBand;
 yline(Xref + errorBandValue)
 yline(Xref - errorBandValue)
 xlabel("Time [s]")
