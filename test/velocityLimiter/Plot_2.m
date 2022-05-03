@@ -116,3 +116,22 @@ x0=0;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
 exportgraphics(gcf,'Plots_velocity_test_verify.pdf','ContentType','vector')
+
+figure(3)
+subplot(2,1,1)
+plot(data6.Var1/timeFix, current_demanded_6, data6.Var1/timeFix, current_actual_6);
+ylim([-11 11])
+title('Velocity limit 0.6 m/s')
+
+subplot(2,1,2)
+plot(data7.Var1/timeFix, current_demanded_7, data7.Var1/timeFix, current_actual_7);
+ylim([-11 11])
+title('Velocity limit 0.7 m/s')
+
+x0=0;
+   y0=0;
+   plotwidth=600;
+   height=500;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'Plots_velocity_test_main.pdf','ContentType','vector')
