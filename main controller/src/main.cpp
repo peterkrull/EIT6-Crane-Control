@@ -173,6 +173,14 @@ void readInput() {
     in.angle = angleLowpass.update(in.angle);
     in.angle = in.angle - angleHighpass.update(in.angle);
 
+    if(in.angle>90 || in.angle<-90){                //Sanity check angle data
+        while(true){
+            digitalWrite(pin_enable_x, LOW);        //Stop motors!
+            digitalWrite(pin_enable_y,LOW);
+            Serial.println("//Insane angle data");
+        }
+    }
+
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
     angleNotchFilter.updateFrequency(wirelengthToFrequency(in.posTrolley.y,in.magnetSw));
@@ -197,7 +205,7 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-.385; // Read x-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-.385-0.015; // Read x-potentiometer and convert to meters
     in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
@@ -306,10 +314,14 @@ void automaticControl() {
 
     digitalWrite(pin_enable_y,HIGH);
     analogWrite(pin_pwm_y,pwm.y);
+
+    Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3) + ", " + String(xInnerConOut,3) + ", " + String(xOuterConOut,3));
     
 }
 
 uint32_t start_time = 0;
+
+bool AutoON = false;
 
 // Main loop
 void loop() {
@@ -333,13 +345,22 @@ void loop() {
 
         // For automatic control
         if (in.ctrlmodeSw == 0){
+            if(AutoON == false){
+                xInnerController.restart();
+                xOuterController.restart();
+                yController.restart();
+                AutoON=true;
+                Serial.println("//con restarted"); 
+            }
             automaticControl();
-            Serial.println(String(xtime)+ ", " + String(in.posTrolley.x)+ ", " + String(in.posTrolley.y) + "," +String(in.angle) +  ","+ String(ref.x) );
+            // Serial.println(String(xtime)+ ", " + String(in.posTrolley.x)+ ", " + String(in.posTrolley.y) + "," +String(in.angle) +  ","+ String(ref.x) + ", " + String(ref.y) + ", " + String(xInnerController) + ", " + String(xOuterController));
 
         } else {
             displayInfo(&display,in,loopFreq,&screenTimer);
             manualControl(); 
             start_time = 0;
+            AutoON=false;
+            Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3));
         }
 
         // Serial.println(String(tempAngle)+", "+String(in.angle));
