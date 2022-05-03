@@ -88,7 +88,7 @@ double PID::update(double error,uint32_t dtime){
     }
 
     if (xKd && dlp){ // derivative with lp
-        differential = (xKd*1e6*(lp.update(error-prev_error)))/dtime;
+        differential = (xKd*1e6*(lp.update(error-prev_error, dtime/1e6)))/dtime;
         outsig += differential;
     } else if (xKd) { // derivative
         differential = (xKd*1e6*(error-prev_error))/dtime;
@@ -103,6 +103,12 @@ double PID::update(double error,uint32_t dtime){
     prev_error = error;
 
     return outsig;
+}
+
+void PID::restart(){
+    lp.restart(0);
+    prev_error = 0;
+    integral = 0;
 }
 
 
