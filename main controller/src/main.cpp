@@ -7,6 +7,7 @@
 #include <Adafruit_I2CDevice.h>
 #include "sigProc.h"
 #include "path.h"
+#include "pathVertical.h"
 #include "math.h"
 #include "pinDefinitions.h"
 #include "dataStructures.h"
@@ -18,7 +19,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-//#define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen
@@ -28,12 +29,12 @@
 #define SCREEN_ADDRESS  0x3C
 
 // x-controller variables
-#define xOuterP 1
-#define xOuterI 0
-#define xOuterD 1
-#define xOuterGain 7.5
+#define xOuterP 1.4
+#define xOuterI 6/8
+#define xOuterD 1.4
+#define xOuterGain 5.5
 
-#define xInnerP 0.25
+#define xInnerP 1.5
 #define xInnerI 0.0
 #define xInnerD 1
 #define xInnerGain 8
@@ -68,7 +69,8 @@ uint32_t screenTimer  = 0;
 uint32_t loopTime     = 0;
 
 #ifdef USEPATHALGO
-QauyToShip testQuayToShip = QauyToShip(pin_magnet_led);
+//QauyToShip testQuayToShip = QauyToShip(pin_magnet_led);
+QauyToShipV testQuayToShip = QauyToShipV(pin_magnet_led);
 ShipToQauy testShipToQuay = ShipToQauy(pin_magnet_led);
 #endif
 
@@ -173,13 +175,15 @@ void readInput() {
     in.angle = angleLowpass.update(in.angle);
     in.angle = in.angle - angleHighpass.update(in.angle);
 
+/*
     if(in.angle>90 || in.angle<-90){                //Sanity check angle data
-        while(true){
+        while(digitalRead()){
             digitalWrite(pin_enable_x, LOW);        //Stop motors!
             digitalWrite(pin_enable_y,LOW);
             Serial.println("//Insane angle data");
         }
     }
+*/
 
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
@@ -205,7 +209,7 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-.385-0.015; // Read x-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-0.06; // Read x-potentiometer and convert to meters
     in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
@@ -298,6 +302,7 @@ void automaticControl() {
     double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain*gainL0;
     double xConOut      = xOuterConOut-xInnerConOut;
     
+
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
 
     // Make current to pwm conversion. This also removes friction in the system
@@ -306,7 +311,7 @@ void automaticControl() {
     
     // Definere software endstops
     pwm.x = endstop(pwmx, 0.1, 3.95, in.posTrolley.x);
-    pwm.y = endstop(pwmy, -0.01, 1.24, in.posTrolley.y);
+    pwm.y = endstop(pwmy, -0.01, 1.30, in.posTrolley.y);
 
     // Outputs the PWM signal
     digitalWrite(pin_enable_x, enableXmotor);
@@ -316,6 +321,7 @@ void automaticControl() {
     analogWrite(pin_pwm_y,pwm.y);
 
     Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3) + ", " + String(xInnerConOut,3) + ", " + String(xOuterConOut,3));
+    //Serial.println(String(millis())+ ", " + String(in.posTrolley.y) + "," + String(in.velTrolley.y));
     
 }
 
@@ -346,9 +352,13 @@ void loop() {
         // For automatic control
         if (in.ctrlmodeSw == 0){
             if(AutoON == false){
+                
                 xInnerController.restart();
                 xOuterController.restart();
                 yController.restart();
+                #ifdef USEPATHALGO
+                testQuayToShip.reset();
+                #endif
                 AutoON=true;
                 Serial.println("//con restarted"); 
             }

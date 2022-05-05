@@ -25,9 +25,9 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Move to above qauy
     if (step==1) {
         ref->x = 0.5;
-        ref->y = 0.02;
+        ref->y = 0.0;
         *innnerLoopOn = false;
-        if (0.48>xPos || xPos>0.52) {    //If trolley is not above container. pm 2 cm
+        if (0.49>xPos || xPos>0.51) {    //If trolley is not above container. pm 2 cm
            failTime = millis();
         } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
            step = 2;
