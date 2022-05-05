@@ -19,7 +19,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-//#define USEPATHALGO      // Uncomment if path algorithm is to be used
+#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen
@@ -175,15 +175,15 @@ void readInput() {
     in.angle = angleLowpass.update(in.angle);
     in.angle = in.angle - angleHighpass.update(in.angle);
 
-
+/*
     if(in.angle>90 || in.angle<-90){                //Sanity check angle data
-        while(true){
+        while(digitalRead()){
             digitalWrite(pin_enable_x, LOW);        //Stop motors!
             digitalWrite(pin_enable_y,LOW);
             Serial.println("//Insane angle data");
         }
     }
-
+*/
 
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
@@ -219,12 +219,6 @@ void readInput() {
     // Filter trolley position inputs
     in.posTrolley.x = xPosLowpasss.update(in.posTrolley.x);
     in.posTrolley.y = yPosLowpasss.update(in.posTrolley.y);
-
-    if(in.posTrolley.y>1.3 || in.posTrolley.y<-0.02){
-        while(true){
-            Serial.println("\\Unvalid reading of wire length");
-        }
-    }
 
     // Calculate container position
     in.posContainer.x = in.posTrolley.x+(sin((in.angle*PI)/180))*in.posTrolley.y;
@@ -326,7 +320,7 @@ void automaticControl() {
     digitalWrite(pin_enable_y,HIGH);
     analogWrite(pin_pwm_y,pwm.y);
 
-    Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3) + ", " + String(xConOut,3));
+    Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3) + ", " + String(xInnerConOut,3) + ", " + String(xOuterConOut,3));
     //Serial.println(String(millis())+ ", " + String(in.posTrolley.y) + "," + String(in.velTrolley.y));
     
 }
