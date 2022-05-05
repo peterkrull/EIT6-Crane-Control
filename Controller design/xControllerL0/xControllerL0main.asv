@@ -1,0 +1,153 @@
+g = 9.82;
+k_ex = 0.609;
+J_x = 0.13;
+m_t = 0.729;
+m_l = 0.951;
+r_x = 75*10^(-3);
+B_x = 12;
+sFrictionX=20;
+cFrictionX=18;
+
+m_1 = m_t + m_l + (J_x/(r_x^2));
+
+s = tf('s');
+
+G = (g*k_ex)/(s^2*m_1*g*r_x+B_x*r_x*g);
+G2 = k_ex/(s*r_x*(m_1*s+B_x));
+
+figure(1);
+rlocus(G)
+
+D = 150*(1+1/2*s);
+
+figure(2);
+rlocus(G*D)
+
+figure(3);
+rlocus(G2);
+
+figure(4);
+rlocus(G2*D);
+
+
+Q = feedback(G2*D,1);
+step(Q)
+
+data1 = csvread('P300D60.csv');
+data2 = csvread('P75D37F003.csv');
+data3 = csvread('P75D37F004.csv');
+data4 = csvread('P75D37F0.csv');
+data5 = csvread('P100D45F004.csv');
+data6 = csvread('P100D25F004.csv');
+data7 = csvread('OP100D25F004.csv');
+
+t1 = data1(:,1);
+xTrolley1= data1(:,2);
+I1 = data1(:,9);
+
+t2 = data2(:,1);
+xTrolley2 = data2(:,2);
+I2 = data2(:,9);
+
+t3 = data3(:,1);
+xTrolley3 = data3(:,2);
+I3 = data3(:,9);
+
+t4 = data4(:,1);
+xTrolley4 = data4(:,2);
+I4 = data4(:,9);
+
+t5 = data5(:,1);
+xTrolley5 = data5(:,2);
+I5 = data5(:,9);
+
+t6 = data6(:,1);
+xTrolley6 = data6(:,2);
+I6 = data6(:,9);
+
+t7 = data7(:,1);
+xTrolley7 = data7(:,2);
+I7 = data7(:,9);
+
+figure(5);
+
+%closedLoop=sim("xControllerL0sim1.slx");
+  plot(closedLoop.tout, closedLoop.X, t1/(10^3)-21.7, xTrolley1, t2/(10^3)-21.7, xTrolley2, t3/(10^3)-14.9, xTrolley3, t4/(10^3)-26, xTrolley4, t5/(10^3)-16.4, xTrolley5, t6/(10^3)-21.4, xTrolley6)
+  legend('x-Simulated','x-Measured', 'Filter 0.03', 'Filter 0.04', 'Filter 0')
+  yline(0.49)
+  yline(0.51)
+  grid on
+
+% figure(6)
+%   plot(closedLoop.tout, closedLoop.X, t2/(10^3)-21.7, xTrolley2)
+%   legend('x-Simulated','x-Measured')
+%   yline(0.49)
+%   yline(0.51)
+%   title('Filter 0.03')
+%   grid on
+% 
+% figure(7)
+%   plot(closedLoop.tout, closedLoop.X, t3/(10^3)-21.7, xTrolley3)
+%   legend('x-Simulated','x-Measured')
+%   yline(0.49)
+%   yline(0.51)
+%   title('filter 0.04')
+%   grid on
+
+  figure(8);
+  plot(t1/(10^3)-21.7,I1)
+  legend('Current')
+  ylim([-10,10])
+  grid on
+
+  figure(9)
+  plot(t2/(10^3)-21.7,I2)
+  legend('Current')
+  ylim([-10,10])
+  title('Filter 0.03')
+  grid on
+
+  figure(10)
+  plot(t3/(10^3)-21.7,I3)
+  legend('Current')
+  ylim([-10,10])
+  title('Filter 0.04')
+  grid on
+
+  figure(11)
+  plot(t4/(10^3)-21.7,I4)
+  legend('Current')
+  ylim([-10,10])
+  title('Filter 0')
+  grid on
+
+  figure(12)
+  plot(t6/(10^3)-21.7,I6)
+  legend('Current')
+  ylim([-10,10])
+  title('Filter 004')
+  grid on
+
+  %Plots til test - Fra kaj
+
+  %closedLoop1=sim("xControllerL0sim1.slx");
+  figure(13);
+  plot(closedLoop1.tout, closedLoop1.X, t6/(10^3)-21.45, xTrolley6)
+  title('P = 100, D = 25')
+  yline(0.49)
+  yline(0.51)
+  xlim([0,4])
+  legend('x-Simulated','x-Measured')
+  grid on
+    
+  figure(14);
+  %Fra skib
+  closedLoop2=sim("xControllerL0sim1.slx");
+  plot(closedLoop2.tout, closedLoop2.X+4, t7/(10^3)-29.65, xTrolley7)
+  legend('x-Simulated','x-Measured')
+  title('P = 100, D = 25')
+  yline(3.49)
+  yline(3.51)
+  xlim([0,4])
+  grid on
+
