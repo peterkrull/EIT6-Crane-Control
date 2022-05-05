@@ -49,7 +49,7 @@ uint8_t currentToPwmY(double current, float ySpeed, bool magnetSw) {
     }
 
     // Set max speed
-    if(abs(ySpeed)>0.6){
+    if(abs(ySpeed)>0.55){
         current = 0; 
     }
 
@@ -77,10 +77,10 @@ uint8_t currentToPwmX(double current, float xSpeed, bool* enableXMotor){
             current = 0;
             *enableXMotor = false;
         }  else if (xSpeed < 0) {
-            current = current - 2.8; // Columb friction current
+            current = current - 2.7; // Columb friction current
             *enableXMotor = true;
         } else if (xSpeed > 0) {
-            current = current + 2.8; // Columb friction current
+            current = current + 2.7; // Columb friction current
             *enableXMotor = true;
         }
 

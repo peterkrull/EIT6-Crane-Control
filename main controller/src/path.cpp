@@ -29,7 +29,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         ref->x = 0.5;
         ref->y = 0.02;
         *innnerLoopOn = false;
-        if(0.48>xPos || xPos>0.52){    //If trolley is not above container. pm 2 cm
+        if(0.49>xPos || xPos>0.51){    //If trolley is not above container. pm 2 cm
            failTime = millis();
        } else if(millis() > failTime+300){ //If head has been above container for 0.5s 
            step = 2;
@@ -65,8 +65,7 @@ void QauyToShip::update(float xPos, float yPos, xy_float  *ref , float xContaine
         *innnerLoopOn = true;
         if(3.46>xContainer || xContainer>3.54 || 3.46>xPos ||xPos>3.54){      //If not within position
             failTime = millis();
-            Serial.print("//FAILING STEP 4 criteria ");
-        } else if(millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
+        } else if(millis() > failTime + 1500) {     //This can be changed to something as a function of velocity and position
             step=5;   
         }
     }
