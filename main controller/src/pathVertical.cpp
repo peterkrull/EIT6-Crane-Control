@@ -13,7 +13,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Before start
     if (step==0) {    
         //If at start position
-        if (-0.05<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
+        if (-0.1<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
             step=1;
             *pathRunning=true;
             *innnerLoopOn = false;
@@ -25,7 +25,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Move to above qauy
     if (step==1) {
         ref->x = 0.5;
-        ref->y = 0.0;
+        ref->y = 0.005;
         *innnerLoopOn = false;
         if (0.49>xPos || xPos>0.51) {    //If trolley is not above container. pm 2 cm
            failTime = millis();
