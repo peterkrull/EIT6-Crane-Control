@@ -13,7 +13,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Before start
     if (step==0) {    
         //If at start position
-        if (-0.05<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
+        if (-0.1<xPos && xPos<0.15 && -0.05<yPos && yPos<0.05){
             step=1;
             *pathRunning=true;
             *innnerLoopOn = false;
@@ -25,9 +25,9 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Move to above qauy
     if (step==1) {
         ref->x = 0.5;
-        ref->y = 0.0;
+        ref->y = 0.005;
         *innnerLoopOn = false;
-        if (0.49>xPos || xPos>0.51) {    //If trolley is not above container. pm 2 cm
+        if (0.485>xPos || xPos>0.515) {    //If trolley is not above container. pm 2 cm
            failTime = millis();
         } else if (millis() > failTime + 300) { //If head has been above container for 0.5s 
            step = 2;
@@ -65,6 +65,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
             // Serial.println("//FAILING STEP 4 criteria ");
         } else if (millis() > failTime + 1600) {     //This can be changed to something as a function of velocity and position
             step=5;   
+            Serial.println("//Step4 passed");
         }
     }
 
@@ -72,7 +73,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
     // Move down to ship and turn off electro magnet.
     if (step==5) {
         ref->y = 1.23;
-        *innnerLoopOn = true;
+        *innnerLoopOn = false;
         if (yPos > 1.21) {
             turnOnElectromagnet(false,LelectroMagnetLED);
             *innnerLoopOn = false;
@@ -181,6 +182,11 @@ void ShipToQauyV::update(float xPos, float yPos, xy_float *ref, float xContainer
         }
 
     }
+}
+
+void ShipToQauyV::reset(){
+        step=0;
+        failTime =0;
 }
 
 

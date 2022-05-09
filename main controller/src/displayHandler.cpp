@@ -42,9 +42,9 @@ void displayInfo(Adafruit_SSD1306 *display,inputs in, float frequency,uint32_t *
         display->setTextSize(1);
         display->setTextColor(SSD1306_WHITE);
         display->setCursor(0,0);
-        display->println(("X "+String(in.posTrolley.x)));
+        display->println(("X "+String(in.posTrolley.x,3)));
         display->setCursor(70,0);
-        display->println(("Y "+String(in.posTrolley.y)));
+        display->println(("Y "+String(in.posTrolley.y,3)));
         display->setCursor(0,10);
         display->println(("A "+String(in.angle)));
         display->setCursor(70,10);

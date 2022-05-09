@@ -45,10 +45,15 @@
 #define yD 75.00
 #define yLP 0.05
 
+#define noWireP 100
+#define noWireI 0
+#define noWireD 25
+
 // Controllers on the x-axis
 // lead_lag xOuterController = lead_lag(xOuterZ,xOuterP,xOuterG);
 PID xOuterController = PID(xOuterP,xOuterI,xOuterD,0.02);
 PID xInnerController = PID(xInnerP, xInnerI, xInnerD, 0.05, false);
+PID noWireController = PID(noWireP,noWireI,noWireD,0.04, false);
 
 // PID controller for y-axis
 PID yController = PID(yP,yI,yD,yLP);
@@ -110,7 +115,7 @@ IIR angleNotchFilter = IIR(a, b);
 #endif
 
 bool pathRunning = false;
-bool InnnerLoopOn = true;
+bool noWireControllerOff = true;
 
 // Run on startup
 void setup() {
@@ -175,15 +180,15 @@ void readInput() {
     in.angle = angleLowpass.update(in.angle);
     in.angle = in.angle - angleHighpass.update(in.angle);
 
-/*
-    if(in.angle>90 || in.angle<-90){                //Sanity check angle data
-        while(digitalRead()){
-            digitalWrite(pin_enable_x, LOW);        //Stop motors!
-            digitalWrite(pin_enable_y,LOW);
-            Serial.println("//Insane angle data");
-        }
-    }
-*/
+    //
+    //if(in.angle>90 || in.angle<-90){                //Sanity check angle data
+    //    while(true){
+    //        digitalWrite(pin_enable_x, LOW);        //Stop motors!
+    //        digitalWrite(pin_enable_y,LOW);
+    //        Serial.println("//Insane angle data");
+    //    }
+    //}
+
 
     // Update notch filter parameters
     #ifdef DYNAMICNOTCHFILTER
@@ -209,8 +214,8 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-0.06; // Read x-potentiometer and convert to meters
-    in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.0500; // Read y-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-0.054-0.040; // Read x-potentiometer and convert to meters
+    in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.05; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
     // in.yDriverAO1    = analogRead(pin_y_driver_AO1);        // Read analog output from driver
@@ -282,25 +287,20 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
+    testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &noWireControllerOff);
     //testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
     #endif
 
-    float gainL0 = 2;
-    bool nonZeroAngle = 1;
+    double xConOut=0;
     // X-controller
-    if(InnnerLoopOn==false){ 
-        gainL0 = 8;
-        nonZeroAngle = 0;
+    if(noWireControllerOff==false){ 
+        xConOut = noWireController.update(ref.x-in.posTrolley.x,Ts);
     }
     else{
-         gainL0 = 1;
-         nonZeroAngle = 1;
-    };
-
-    double xInnerConOut = xInnerController.update(-in.angle*PI/180*nonZeroAngle,Ts)*xInnerGain;
-    double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain*gainL0;
-    double xConOut      = xOuterConOut-xInnerConOut;
+        double xInnerConOut = xInnerController.update(-in.angle*PI/180,Ts)*xInnerGain;
+        double xOuterConOut = xOuterController.update(ref.x-in.posTrolley.x, Ts)*xOuterGain;
+        xConOut      = xOuterConOut-xInnerConOut;
+    }
     
 
     double yConOut = yController.update(ref.y-in.posTrolley.y,Ts);
@@ -320,7 +320,7 @@ void automaticControl() {
     digitalWrite(pin_enable_y,HIGH);
     analogWrite(pin_pwm_y,pwm.y);
 
-    Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(ref.y,3) + ", " + String(xInnerConOut,3) + ", " + String(xOuterConOut,3));
+    Serial.println(String(millis())+ ", " + String(in.posTrolley.x,3) + ", " + String(in.posContainer.x,3) + ", " + String(in.posTrolley.y,3) + "," +String(in.angle) +  ","+ String(ref.x,3) + ", " + String(xConOut,3) );
     //Serial.println(String(millis())+ ", " + String(in.posTrolley.y) + "," + String(in.velTrolley.y));
     
 }
@@ -357,7 +357,7 @@ void loop() {
                 xOuterController.restart();
                 yController.restart();
                 #ifdef USEPATHALGO
-                testQuayToShip.reset();
+                //testShipToQuay.reset();
                 #endif
                 AutoON=true;
                 Serial.println("//con restarted"); 
