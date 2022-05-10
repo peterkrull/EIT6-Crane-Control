@@ -214,7 +214,7 @@ void readInput() {
     // in.joystickSw    = digitalRead(pin_joystick_sw);        // Reads joystick switch
     in.magnetSw      = digitalRead(pin_magnet_sw);          // Reads magnet switch on the controller
     in.ctrlmodeSw    = digitalRead(pin_ctrlmode_sw);        // Reads control mode on the controller
-    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-0.054-0.040; // Read x-potentiometer and convert to meters
+    in.posTrolley.x  = 0.0048*analogRead(pin_pos_x)-0.3265-0.054-0.065; // Read x-potentiometer and convert to meters
     in.posTrolley.y  = 0.0015*analogRead(pin_pos_y)-0.05; // Read y-potentiometer and convert to meters
     // in.xDriverAO1    = analogRead(pin_x_driver_AO1);        // Read analog output from driver
     // in.xDriverAO2    = analogRead(pin_x_driver_AO2);        // Read analog output from driver
@@ -287,7 +287,7 @@ void automaticControl() {
     bool enableXmotor = true;
 
     #ifdef USEPATHALGO
-    testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &noWireControllerOff);
+    testQuayToShip.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &noWireControllerOff);
     //testShipToQuay.update( in.posTrolley.x, in.posTrolley.y,&ref, in.posContainer.x, in.velContainerAbs, &pathRunning, &InnnerLoopOn);
     #endif
 
@@ -357,7 +357,7 @@ void loop() {
                 xOuterController.restart();
                 yController.restart();
                 #ifdef USEPATHALGO
-                //testShipToQuay.reset();
+                testQuayToShip.reset();
                 #endif
                 AutoON=true;
                 Serial.println("//con restarted"); 

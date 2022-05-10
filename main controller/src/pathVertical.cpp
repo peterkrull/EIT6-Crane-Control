@@ -42,7 +42,7 @@ int QauyToShipV::update(float xPos, float yPos, xy_float  *ref , float xContaine
         if (yPos<1.21) {
             failTime = millis();
         } else if (millis() > failTime + 400) {
-            step=3;
+            step=4;
         }
     }
 
