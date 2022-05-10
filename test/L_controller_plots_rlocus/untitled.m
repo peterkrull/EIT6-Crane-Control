@@ -145,7 +145,7 @@ Ml = ml+((4*j)/rl^2);
 
 % Model
 %G = (ke*rl)/(((ml*s+bl)*rl^2+j*s)*s);
-G = (ke)/(rl*(s+(1/Ml)*bl)*s)
+G = (ke*Ml^-1)/(rl*(s^2+s*Ml^-1*bl))
 
 % Make bodeplot without any controller
 figure(2)

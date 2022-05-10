@@ -1,3 +1,6 @@
+clf
+close all
+
 data1 = readtable('test_data_p1mps.csv');
 data2 = readtable('test_data_p2mps.csv');
 data3 = readtable('test_data_p3mps.csv');
@@ -168,10 +171,12 @@ exportgraphics(gcf,'Plots_velocity_test_main.pdf','ContentType','vector')
 figure(4)
 plot(data6.Var1/timeFix-28-0.5, current_demanded_6, data6.Var1/timeFix-28-0.5, current_actual_6);
 ylim([-11 11])
-xlim([0 2.5])
+xlim([0 3])
 title('Velocity limit 0.6 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
+grid on
+legend('Commanded','Actual','Location','southwest')
 
 x0=0;
    y0=0;
@@ -184,10 +189,18 @@ exportgraphics(gcf,'Plots_velocity_test_main_1.pdf','ContentType','vector')
 figure(5)
 plot(data7.Var1/timeFix-32.7-0.5, current_demanded_7, data7.Var1/timeFix-32.7-0.5, current_actual_7);
 ylim([-11 11])
-xlim([0 2.5])
+xlim([0 3])
 title('Velocity limit 0.7 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
+grid on
+legend('Commanded','Actual','Location','southwest')
+x = [0.8,0.8];
+y = [0.42,0.52];
+annotation('textarrow',x,y,'String','Unwanted ');
+x1 = [0.8,0.8];
+y1 = [0.32,0.22];
+annotation('textarrow',x1,y1);
 
 x0=0;
    y0=0;
@@ -197,3 +210,53 @@ x0=0;
 
 exportgraphics(gcf,'Plots_velocity_test_main_2.pdf','ContentType','vector')
 
+figure(6)
+subplot(2,1,1)
+plot(data6.Var1/timeFix,data6.Var3);
+%ylim([-11 11])
+title('Velocity limit 0.6 m/s')
+xlabel('Time [s]') 
+ylabel('Current [A]') 
+
+subplot(2,1,2)
+plot(data7.Var1/timeFix,data7.Var3);
+%ylim([-11 11])
+title('Velocity limit 0.7 m/s')
+xlabel('Time [s]') 
+ylabel('Current [A]') 
+
+figure(7)
+plot(data6.Var1/timeFix-28-0.5, data6.Var3);
+ylim([-0.1 0.8])
+xlim([0 3])
+title('Velocity limit 0.6 m/s')
+xlabel('Time [s]') 
+ylabel('Velocity [m/s]') 
+grid on
+%legend('Commanded','Actual','Location','southwest')
+
+x0=0;
+   y0=0;
+   plotwidth=300;
+   height=200;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'Plots_velocity_test_main_1_vel.pdf','ContentType','vector')
+
+figure(8)
+plot(data7.Var1/timeFix-32.7-0.5, data7.Var3);
+ylim([-0.1 0.8])
+xlim([0 3])
+title('Velocity limit 0.7 m/s')
+xlabel('Time [s]') 
+ylabel('Velocity [m/s]') 
+grid on
+%legend('Commanded','Actual','Location','southwest')
+
+x0=0;
+   y0=0;
+   plotwidth=300;
+   height=200;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'Plots_velocity_test_main_2_vel.pdf','ContentType','vector')
