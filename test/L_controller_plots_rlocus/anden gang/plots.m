@@ -44,28 +44,18 @@ exportgraphics(gcf,'plant_rlocus.pdf','ContentType','vector')
 
 figure(2)
 rlocus(G*((1+(1/2)*s)))
-%rlocus(G)
-%zgrid(0.71,1)
-%xlim([-1.2 0.2])
-%ylim([-1.2 1.2])
-%ylim([-2.5 2.5])
+
 x = [0.54,0.54];
 y = [0.6,0.5];
 x1 = [0.55,0.55];
 y1 = [0.4,0.49];
-%a = annotation('textarrow',x,y,'String','Gain = 150 ');
-%b = annotation('textarrow',x1,y1,'String','Gain = inf ');
-%text(-1.5,0.85,'\zeta =')
-%text(-1.5,-0.85,'\zeta =')
-%text(-1.58,0.1,'\omega_n =')
 
-%text(-0.8,0.15,'45.23^{\circ}', 'FontSize', 8)
 xlim([-4.5 0.1])
 axis equal
 hold on
-p = plot(-3.32,1.46,'^',-3.32,-1.46,'^')
-p(1).Color='k';
-p(2).Color='k';
+%p = plot(-3.32,1.46,'^',-3.32,-1.46,'^')
+%p(1).Color='k';
+%p(2).Color='k';
 
 
 x0=0;
@@ -74,5 +64,5 @@ x0=0;
    height=400;
    set(gcf,'position',[x0,y0,plotwidth,height])
    
-exportgraphics(gcf,'plant_rlocus_zero_2.pdf','ContentType','vector')
+exportgraphics(gcf,'plant_rlocus_zero_22.pdf','ContentType','vector')
 
