@@ -193,3 +193,19 @@ x0=0;
    set(gcf,'position',[x0,y0,plotwidth,height])
 
 exportgraphics(gcf,'angle_test.pdf','ContentType','vector')
+
+figure(4)
+plot((data2.Var1/t_fix)-613.8,data2.Var2)
+xlim([0 5])
+xlabel('Time [s]')
+ylabel('Angle [deg]')
+%legend('unfiltered','filtered')
+%title('Without container 30 cm')
+
+x0=0;
+   y0=0;
+   plotwidth=400;
+   height=300;
+   set(gcf,'position',[x0,y0,plotwidth,height])
+
+exportgraphics(gcf,'angle_test_app.pdf','ContentType','vector')
