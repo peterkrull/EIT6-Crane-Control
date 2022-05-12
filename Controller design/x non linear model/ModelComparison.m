@@ -5,12 +5,14 @@ clc
 %simXGain = 5;
 
 testData = readmatrix('testOfControllers\DCoffsetTest2.txt', 'CommentStyle', '//');
-testData = readmatrix('testOfControllers\29-4-2022\gain = 7.5\1 meter\test1.csv', 'CommentStyle', '//');
-testTime = (testData(:,1)-testData(1,1))/1000000;
+testData = readmatrix('testOfControllers\4-5-2022\PIDtest13.txt', 'CommentStyle', '//');
+testTime = (testData(:,1)-testData(1,1))/1000;
 testX = testData(:,2);
-testY = testData(:,3);
-testAngle = testData(:,4);
-testXRef = testData(:,5);
+testY = testData(:,4);
+testAngle = testData(:,5);
+testXRef = testData(:,6);
+testXcon = testData(:,9);
+testAnglecon = testData(:,8);
 
 Xref = testXRef(1);
 stepSize = abs(Xref-testX(1));
@@ -31,6 +33,9 @@ plot(testTime, testAngle)
 figure(346)
 plot(testTime, testX)
 
+figure(32857)
+plot(testTime, testXcon+testAnglecon)
+ylim([-10 10])
 
 %%
 figure(1)

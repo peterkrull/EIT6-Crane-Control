@@ -19,7 +19,7 @@
 // Configuration
 #define SAMPLEHZ 100        // Control loop sample frequency
 #define OLEDHZ   30         // Oled display refresh rate
-#define USEPATHALGO      // Uncomment if path algorithm is to be used
+//#define USEPATHALGO      // Uncomment if path algorithm is to be used
 #define DYNAMICNOTCHFILTER
 
 // Definitions for screen

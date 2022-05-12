@@ -3,7 +3,7 @@ close all
 clc
 
 
-testData = readmatrix('testOfControllers\2-5-2022\l75s3t1.txt', 'CommentStyle', '//');
+testData = readmatrix('testOfControllers\4-5-2022\PIDtest1.txt', 'CommentStyle', '//');
 
 
 plotData(testData, "test 1")

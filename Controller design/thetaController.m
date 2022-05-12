@@ -5,44 +5,45 @@ clc
 s = tf('s');
 run("x non linear model/variables.m")
 
-InitWireLength = .1;
 l_P = InitWireLength;
 
 b = k_ex/r_x;
 a = M_1*l_P-m_l*l_P;
 G_theta = -s/(s^3*a + s^2*B_x*l_P+s*g*M_1+g*B_x)*b;
 H_theta = -1;
-Notch = (s^2 + (3.2*2*pi)^2)/(s^2 + 2*2*pi*s+ (3.2*2*pi)^2);
 
 
 figure(1)
 rlocus(G_theta*H_theta)
 %export_fig("thetaPlantRLocus.pdf")
 
-D_theta = (s + .25);
+D_theta = (s + .434);
 figure(2)
-rlocus(G_theta*H_theta*D_theta)
+rlocus(minreal(G_theta*H_theta*D_theta))
 %export_fig("thetaFeedbackRLocus1.pdf")
 
 figure(3)
-rlocus(G_theta*H_theta*D_theta)
+rlocus(minreal(G_theta*H_theta*D_theta))
 hold on
-pole = rlocus(G_theta*H_theta*D_theta,8);
+pole = rlocus(minreal(G_theta*H_theta*D_theta),8);
 plot(real(pole), imag(pole), '^k')
 hold off
 legend("Root locus","Pole placement K_p=8",Location="southwest")
-export_fig("thetaFeedbackRLocus1.pdf")
+%export_fig("thetaFeedbackRLocus1.pdf")
 
+clear pole
 D_theta = D_theta*8;
 figure(4)
 pzmap(feedback(G_theta,H_theta*D_theta))
 xlim([-1.5 .1])
 ylim([-3.2 3.2])
+pole(feedback(G_theta,H_theta*D_theta))
+zero(feedback(G_theta,H_theta*D_theta))
 %export_fig("thetaFBpzMapNoContainer.pdf")
 
 %%
 figure(5)
-step(feedback(G_theta, H_theta*D_theta*Notch))
+step(feedback(G_theta, H_theta*D_theta))
 
 %%
 close all

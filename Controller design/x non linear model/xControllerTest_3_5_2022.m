@@ -3,12 +3,12 @@ close all
 clc
 
 
-testData = readmatrix('testOfControllers\3-5-2022\SingleStep7.txt', 'CommentStyle', '//');
-testData1 = readmatrix("testOfControllers\3-5-2022\SingleStep8.txt");
+testData = readmatrix('testOfControllers\4-5-2022\crossStep2.txt', 'CommentStyle', '//');
+testData1 = readmatrix('testOfControllers\4-5-2022\PIDtest13.txt', 'CommentStyle', '//');
 %testData2 = readmatrix("testOfControllers\3-5-2022\SingleStep6.txt");
 
-[testTime0, testContainer0, conout0] = plotData(testData, "Cross step 9");
-[testTime1, testContainer1, conout1] = plotData(testData1, "Cross step 10");
+[testTime0, testContainer0, conout0] = plotData(testData, "Cross step");
+[testTime1, testContainer1, conout1] = plotData(testData1, "PID test 13");
 %[testTime2, testContainer2, conout2] = plotData(testData2, "Single step 6");
 
 
@@ -32,18 +32,18 @@ function[testTime, testContainerX, conOutput] =  plotData(input, test)
     %+ String(in.posTrolley.y) + "," +String(in.angle) +  ","+ String(ref.x) + ", " + String(ref.y) + ", " + String(xInnerConOut ) + ", " + String(xOuterConOut));
 
     testTime = (input(:,1)-input(1,1))/1000;
-    testX = input(:,2)-input(1,2);
+    testX = input(:,2);
     testY = input(:,4);
     testAngle = input(:,5);
     testXRef = input(:,6);
     testYRef = input(:,7);
     testAngleconOut = input(:,8);
     testXconOut = input(:,9);
-    testContainerX = input(:,3)-input(1,2);
+    testContainerX = input(:,3);
     
     conOutput = [testXconOut testAngleconOut];
 
-    Xref = testXRef(1)-input(1,2);
+    Xref = testXRef(1);
     stepSize = abs(Xref-testX(1));
     
 
@@ -53,34 +53,36 @@ function[testTime, testContainerX, conOutput] =  plotData(input, test)
     ylabel("Position [m]")
     title(strcat(test,", Trolley x"))
 
-    %figure
-    %plot(testTime, testY)
-    %xlabel("Time [s]")
-    %ylabel("Position [m]")
-    %title(strcat(test,", Trolley y"))
+    figure
+    plot(testTime, testY)
+    xlabel("Time [s]")
+    ylabel("Position [m]")
+    title(strcat(test,", Trolley y"))
     
 
-    %figure
-    %plot(testTime, testX + sin(testAngle*pi/180).*testY)
-    %hold on
-    %plot(testTime, testContainerX)
-    %hold off
-    %errorBand = .064;
-    %errorBandValue=stepSize*errorBand;
-    %yline(Xref + .04)
-    %yline(Xref - .04)
+    figure
+    plot(testTime, testX + sin(testAngle*pi/180).*testY)
+    hold on
+    plot(testTime, testContainerX)
+    hold off
+    errorBand = .064;
+    errorBandValue=stepSize*errorBand;
+    Xref = 3.5;
+    yline(Xref + .05)
+    yline(Xref - .05)
+    xlim([0 14]);
     
-    %xlabel("Time [s]")
-    %ylabel("Position [m]")
-    %title(strcat(test,", Container x"))
-    %legend("Ml container position", "con container position")
+    xlabel("Time [s]")
+    ylabel("Position [m]")
+    title(strcat(test,", Container x"))
+    legend("Ml container position", "con container position", "Location","southeast")
     %export_fig(strcat("XcontrollerTestFinalGain", test, ".pdf"))
 
-    %figure
-    %plot(testTime, testAngle)
-    %xlabel("Time [s]")
-    %ylabel("Angle [deg]")
-    %title(strcat(test,", angle"))
+    figure
+    plot(testTime, testAngle)
+    xlabel("Time [s]")
+    ylabel("Angle [deg]")
+    title(strcat(test,", angle"))
 
     figure
     plot(testTime, testXconOut)

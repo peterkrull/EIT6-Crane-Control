@@ -15,9 +15,17 @@
     cFrictionX=18;
     sFrictionL=50;
     cFrictionL=90;
-    InitWireLength=1;
+    InitWireLength=.75;
     InitXPos = 0;
     Xref = 1;
     simXGain = 7.5;
+    xConP = 0;
+    xConI = 0;
+    xConD = 0;
+    hptau = 1;
+    lpxContau = 0.02;
+    lpThetaContau = 0.05;
+    lpxPostau = .03;
+    ts = 0.01;
 
 

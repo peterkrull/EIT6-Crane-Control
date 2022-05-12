@@ -29,15 +29,15 @@
 #define SCREEN_ADDRESS  0x3C
 
 // x-controller variables
-#define xOuterP 1.4
-#define xOuterI 6/8
-#define xOuterD 1.4
-#define xOuterGain 5.5
+#define xOuterP .85
+#define xOuterI .32
+#define xOuterD .9
+#define xOuterGain 7.8
 
 #define xInnerP 1.5
 #define xInnerI 0.0
 #define xInnerD 1
-#define xInnerGain 8
+#define xInnerGain 10
 
 // y-controller variables
 #define yP 150.0
