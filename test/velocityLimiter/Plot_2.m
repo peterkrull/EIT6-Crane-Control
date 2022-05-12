@@ -172,7 +172,6 @@ figure(4)
 plot(data6.Var1/timeFix-28-0.5, current_demanded_6, data6.Var1/timeFix-28-0.5, current_actual_6);
 ylim([-11 11])
 xlim([0 3])
-title('Velocity limit 0.6 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
 grid on
@@ -190,7 +189,6 @@ figure(5)
 plot(data7.Var1/timeFix-32.7-0.5, current_demanded_7, data7.Var1/timeFix-32.7-0.5, current_actual_7);
 ylim([-11 11])
 xlim([0 3])
-title('Velocity limit 0.7 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
 grid on
@@ -214,14 +212,12 @@ figure(6)
 subplot(2,1,1)
 plot(data6.Var1/timeFix,data6.Var3);
 %ylim([-11 11])
-title('Velocity limit 0.6 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
 
 subplot(2,1,2)
 plot(data7.Var1/timeFix,data7.Var3);
 %ylim([-11 11])
-title('Velocity limit 0.7 m/s')
 xlabel('Time [s]') 
 ylabel('Current [A]') 
 
@@ -229,7 +225,6 @@ figure(7)
 plot(data6.Var1/timeFix-28-0.5, data6.Var3);
 ylim([-0.1 0.8])
 xlim([0 3])
-title('Velocity limit 0.6 m/s')
 xlabel('Time [s]') 
 ylabel('Velocity [m/s]') 
 grid on
@@ -247,7 +242,6 @@ figure(8)
 plot(data7.Var1/timeFix-32.7-0.5, data7.Var3);
 ylim([-0.1 0.8])
 xlim([0 3])
-title('Velocity limit 0.7 m/s')
 xlabel('Time [s]') 
 ylabel('Velocity [m/s]') 
 grid on
