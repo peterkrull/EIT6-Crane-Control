@@ -38,7 +38,7 @@ polesCon1 = rlocus(minreal(InnerLoop*G_x*D_x),simXGain);
 plot(real(polesCon1), imag(polesCon1),'^k')
 rlocus(minreal(InnerLoop*G_x*D_x))
 hold off
-xlim([-8 2])
+xlim([-8 .5])
 grid on
 %export_fig("xLoopRLocus2.pdf")
 
@@ -49,12 +49,15 @@ simulation = sim("x non linear model\CraneModel.slx");
 figure(22)
 plot(t,y)
 hold on 
-plot(simulation.tout-1, simulation.X1)
+plot(simulation.tout, simulation.X1)
 yline(1+.05)
 yline(1-.05)
 hold off
 xlim([0 20])
+xlabel("Time [s]")
+ylabel("Trolley position [m]")
 legend("Linear model", "Non linear model", "Location","southeast")
+grid on
 %export_fig("xStepNonTuned.pdf")
 
 
@@ -66,30 +69,34 @@ simulation = sim("x non linear model\CraneModel.slx");
 figure(23)
 plot(t,y)
 hold on 
-plot(simulation.tout-1, simulation.X1)
+plot(simulation.tout, simulation.X1)
 yline(1+.05)
 yline(1-.05)
 hold off
 xlabel("Time [s]")
-ylabel("Position [m]")
+ylabel("Trolley position [m]")
 xlim([0 20])
+grid on
 legend("Linear model", "Non linear model", "Location","southeast")
-%export_fig("xStepNonTunedInnerGain10.pdf")
+export_fig("xStepNonTunedInnerGain10.pdf")
 
 figure(232)
-plot(simulation.tout-1, simulation.Theta1*180/pi)
+plot(simulation.tout, simulation.Theta1*180/pi, "Color",'#D95319')
 xlabel("Time [s]")
 ylabel("Angle [deg]")
 xlim([0 20])
-%export_fig("xStepNonTunedInnerGain10Angle.pdf")
+grid on
+export_fig("xStepNonTunedInnerGain10Angle.pdf")
 
 %%
 
 
 %%
+simThetaGain = 10;
 InnerLoopLoweredGain = feedback(G_theta, H_theta*(1.5+s)*simThetaGain);
 figure(3)
 rlocus(InnerLoopLoweredGain*G_x)
+ylim([-20 20])
 %export_fig("xRlocusPID1.pdf")
 
 d_xPID2 = (.5+ s)^2/s;
@@ -103,7 +110,8 @@ rlocus(InnerLoopLoweredGain*G_x*d_xPID2)
 hold on
 plot(real(polesAtGain), imag(polesAtGain), "^k")
 hold off
-%export_fig("xRlocusPID2.pdf")
+grid on
+export_fig("xRlocusPID2.pdf")
 
 
 figure(245)
@@ -150,14 +158,14 @@ rlocus(InnerLoopLoweredGain*G_x*d_xPID3)
 xConP = 1;
 xConD = 1;
 xConI = .25;
-simXGain = 7;  
+simXGain = 7.5;  
 simThetaGain = 10;
 
 
 xConPLin = 1;
 xConDLin = 1;
 xConILin = .25;
-simXGainLin = 7;   
+simXGainLin = 7.5;   
 linPIDVSSIM = (xConPLin + xConDLin*s + xConILin/s);
 
 [y, t] = step(feedback(G_x*InnerLoopLoweredGain*linPIDVSSIM*simXGainLin,1),21);
@@ -170,8 +178,9 @@ yline(1+.05)
 yline(1-.05)
 hold off
 xlabel("Time [s]")
-ylabel("Position [m]")
+ylabel("Trolley position [m]")
 xlim([0 20])
+grid on
 legend("Linear model", "Non linear model", "Location","southeast")
 %export_fig("NonTunedXcontrollerStep1Meter.pdf")
 
@@ -192,8 +201,8 @@ simThetaGain = 8;
 
 
 
-xConPLin = 1.6;
-xConDLin = 1.5;
+xConPLin = 1.8;
+xConDLin = 1.65;
 xConILin = 2/8;
 simXGainLin = 7.5;   
 linPIDVSSIM = (xConPLin + xConDLin*s + xConILin/s);
@@ -203,28 +212,29 @@ InnerLoopLoweredGain = feedback(G_theta, (2 +s)*simThetaGain*H_theta);
 [y, t] = step(feedback(G_x*InnerLoopLoweredGain*linPIDVSSIM*simXGainLin,1),21);
 simulation = sim("x non linear model\CraneModel.slx");
 figure(22)
-plot(t,y)
+%plot(t,y)
 hold on 
 plot(simulation.tout, simulation.X1)
 yline(1+.05)
 yline(1-.05)
-yline(1+.5/3)
+%yline(1+.5/3)
 
 xlabel("Time [s]")
-ylabel("Position [m]")
+ylabel("Trolley position [m]")
 hold off
 xlim([0 20])
-legend("Linear model", "Non linear model", "Location","southeast")
+%legend("Linear model", "Non linear model", "Location","southeast")
 grid on
-%export_fig("TunedXcontrollerStep1MeterLongWire.pdf")
+export_fig("TunedXcontrollerStep1Meter.pdf")
 
 
-% figure(226)
-% plot(simulation.tout, simulation.Theta1*180/pi)
-% xlabel("Time [s]")
-% ylabel("Angle [deg]")
-% xlim([0 20])
-%export_fig("TunedXcontrollerStep1MeterAngleLongWire.pdf")
+figure(226)
+plot(simulation.tout, simulation.Theta1*180/pi)
+xlabel("Time [s]")
+ylabel("Angle [deg]")
+xlim([0 20])
+grid on
+export_fig("TunedXcontrollerStep1MeterAngle.pdf")
 
 
 

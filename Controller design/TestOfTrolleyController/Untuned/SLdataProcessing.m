@@ -4,10 +4,15 @@ clc
 
 
 plotTrolley("Untuned2.txt")
+grid on
 export_fig("UntunedTrolleyPosition.pdf")
+
 plotAngle("Untuned2.txt")
+grid on
 export_fig("UntunedAngle.pdf")
+
 plotContainer("Untuned2.txt")
+grid on
 export_fig("UntunedContanerPosition.pdf")
 
 % 
@@ -61,7 +66,7 @@ function plotAngle(test1)
 
 
     figure
-    plot(data1(:,1), data1(:,5))
+    plot(data1(:,1), -data1(:,5))
     hold on
   
     hold off
@@ -92,7 +97,7 @@ function export_fig(name)
     x0=0;
     y0=0;
     plotwidth=650/1.5;
-    plotHeight=400/3;
+    plotHeight=400/1.5;
     set(gcf,'position',[x0,y0,plotwidth,plotHeight])
     
     
