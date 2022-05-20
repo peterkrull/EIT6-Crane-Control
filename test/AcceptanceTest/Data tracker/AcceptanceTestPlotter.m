@@ -72,52 +72,90 @@ x0=0;
 y0=0;
 plotwidth=500;
 height=200;
+xlim1 = 0;
+xlim2 = 12;
+lText = 'Measured angle';
+lLoc = 'Location';
+lPlacement = 'southwest';
+yLabel = 'Theta [deg]';
+xLabel = 'Time [s]';
 
 figure(1)
 plot(t1QTS(5:end),angle1QTS(5:end));
 grid on
+xlim([xlim1,xlim2]);
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle1QTS.pdf','ContentType','vector')
 
 figure(2)
 plot(t8QTS(5:end),angle8QTS(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle8QTS.pdf','ContentType','vector')
 
 figure(3)
 plot(t10QTS(5:end),angle10QTS(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle10QTS.pdf','ContentType','vector')
 
 figure(4)
 plot(t13QTS(5:end),angle13QTS(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle13QTS.pdf','ContentType','vector')
 
 figure(5)
 plot(t10STQ(5:end),angle10STQ(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle10STQ.pdf','ContentType','vector')
 
 figure(6)
 plot(t11STQ(5:end),angle11STQ(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle11STQ.pdf','ContentType','vector')
 
 figure(7)
 plot(t12STQ(5:end),angle12STQ(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle12STQ.pdf','ContentType','vector')
 
 figure(8)
 plot(t14STQ(5:end),angle14STQ(5:end));
 grid on
+xlim([xlim1,xlim2])
+%legend(lText,lLoc,lPlacement);
+xlabel(xLabel);
+ylabel(yLabel);
 set(gcf,'position',[x0,y0,plotwidth,height])
 exportgraphics(gcf,'angle14STQ.pdf','ContentType','vector')
-
